@@ -3,15 +3,18 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Generator Kitab Rute &amp; RAB Perjalanan Rombongan</title>
+  <title>Generator Kitab Rute, RAB &amp; Spanduk Wisata</title>
 
   <!-- Leaflet CSS (Peta Interaktif Gratis OpenStreetMap) -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
-  <!-- Tailwind CSS untuk UI & Layout Cetak A4 -->
+  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- html2canvas & jsPDF untuk Download Gambar (PNG) & PDF A4 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" crossorigin="anonymous"></script>
 
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');
 
     body {
       font-family: 'Plus Jakarta Sans', sans-serif;
@@ -101,7 +104,7 @@
 </head>
 <body class="antialiased">
 
-  <!-- HEADER NAVIGASI (TIDAK IKUT TERCETAK) -->
+  <!-- HEADER NAVIGASI -->
   <header class="no-print bg-white border-b border-slate-200 sticky top-0 z-30">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3.5 flex flex-wrap items-center justify-between gap-3">
       <div class="flex items-center gap-3">
@@ -109,8 +112,8 @@
           KR
         </div>
         <div>
-          <h1 class="text-base sm:text-lg font-extrabold text-slate-900 leading-tight">Generator Kitab Rute &amp; RAB Wisata</h1>
-          <p class="text-xs text-slate-500">Peta Jalan Raya Riil (OpenStreetMap + OSRM) &bull; Multi-Hari &bull; Siap Cetak A4</p>
+          <h1 class="text-base sm:text-lg font-extrabold text-slate-900 leading-tight">Generator Kitab Rute, RAB &amp; Spanduk Wisata</h1>
+          <p class="text-xs text-slate-500">Peta Jalan Raya Riil &bull; Multi-Hari &bull; Export A4 PNG/PDF &bull; Spanduk Bus</p>
         </div>
       </div>
 
@@ -122,7 +125,7 @@
           <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
           </svg>
-          Cetak Kitab Rute (A4)
+          Cetak Langsung (A4)
         </button>
       </div>
     </div>
@@ -131,7 +134,7 @@
   <!-- KONTEN UTAMA -->
   <main class="max-w-7xl mx-auto px-4 sm:px-6 py-6 print-container">
 
-    <!-- KOP DOKUMEN (HANYA MUNCUL SAAT DICETAK A4) -->
+    <!-- KOP DOKUMEN (UNTUK CETAK PRINT BROWSER) -->
     <div class="hidden print-only border-b-2 border-slate-900 pb-3 mb-4">
       <div class="flex justify-between items-end">
         <div>
@@ -148,7 +151,7 @@
 
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
-      <!-- KOLOM KIRI: INPUT IDENTITAS, TANGGAL & DAFTAR TITIK RUTE -->
+      <!-- KOLOM KIRI: INPUT IDENTITAS, PENGATURAN KECEPATAN, TITIK RUTE & BIAYA -->
       <div class="lg:col-span-5 space-y-5 no-print">
 
         <!-- 1. IDENTITAS & RENTANG TANGGAL -->
@@ -164,6 +167,17 @@
             <div>
               <label class="block text-xs font-semibold text-slate-700 mb-1">Nama Kegiatan / Rombongan</label>
               <input type="text" id="tripName" value="Ziarah &amp; Wisata Pantai Karang Jahe Rembang" oninput="updateAll()" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none" />
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">Penyelenggara / Panitia</label>
+                <input type="text" id="organizerName" value="Keluarga Besar &amp; Jamaah Banyubiru" oninput="updateAll()" class="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none" />
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">Nomor / Kode Armada Bus</label>
+                <input type="text" id="busCodeLabel" value="BUS 01" oninput="updateAll()" class="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none" />
+              </div>
             </div>
 
             <div class="grid grid-cols-2 gap-3">
@@ -192,11 +206,39 @@
               </div>
             </div>
 
-            <div class="flex items-center justify-between pt-1">
-              <label class="inline-flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" id="busMode" checked onchange="updateAll()" class="w-4 h-4 text-emerald-600 rounded border-slate-300 focus:ring-emerald-500" />
-                <span class="text-xs font-semibold text-slate-700">Mode Bus Besar (+20% estimasi waktu tempuh)</span>
-              </label>
+            <!-- PANEL PENGATURAN KECEPATAN (STANDAR VS ALTERNATIF MANUAL) -->
+            <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-2.5">
+              <p class="text-[11px] font-extrabold text-slate-700 uppercase tracking-wider">Pengaturan Kalkulasi Waktu Tempuh</p>
+              
+              <div class="space-y-2 text-xs">
+                <label class="flex items-start gap-2 cursor-pointer">
+                  <input type="radio" name="speedMode" value="osrm_default" checked onchange="toggleSpeedMode()" class="mt-0.5 text-emerald-600 focus:ring-emerald-500" />
+                  <div>
+                    <span class="font-bold text-slate-800 block">Standar Peta Jalan Raya (OSRM)</span>
+                    <span class="text-[11px] text-slate-500">Mengikuti batas kecepatan jalan tol/arteri/kota otomatis.</span>
+                  </div>
+                </label>
+
+                <div id="osrmBusOptionBox" class="pl-5">
+                  <label class="inline-flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" id="busMode" checked onchange="updateAll()" class="w-3.5 h-3.5 text-emerald-600 rounded border-slate-300" />
+                    <span class="text-[11px] font-semibold text-slate-700">Penyesuaian Bus Besar (+20% waktu tempuh)</span>
+                  </label>
+                </div>
+
+                <label class="flex items-start gap-2 cursor-pointer pt-1 border-t border-slate-200/80">
+                  <input type="radio" name="speedMode" value="custom_speed" onchange="toggleSpeedMode()" class="mt-0.5 text-emerald-600 focus:ring-emerald-500" />
+                  <div class="flex-1">
+                    <span class="font-bold text-slate-800 block">Alternatif Kecepatan Rata-Rata Manual</span>
+                    <span class="text-[11px] text-slate-500">Hitung waktu tempuh berdasarkan target kecepatan rata-rata.</span>
+                  </div>
+                </label>
+
+                <div id="customSpeedInputBox" class="hidden pl-5 pt-1 flex items-center gap-2">
+                  <input type="number" id="customAvgSpeed" value="50" min="15" max="120" oninput="updateAll()" class="w-24 px-2.5 py-1.5 text-xs font-bold border border-slate-300 rounded-lg bg-white" />
+                  <span class="text-xs font-semibold text-slate-600">km / jam (rata-rata perjalanan)</span>
+                </div>
+              </div>
             </div>
           </div>
         </section>
@@ -213,13 +255,11 @@
             </button>
           </div>
 
-          <!-- BANNER INSTRUKSI SAAT MODE KLIK PETA AKTIF -->
           <div id="mapClickBanner" class="hidden mb-3 p-2.5 rounded-lg bg-amber-50 border border-amber-300 text-amber-900 text-xs flex items-center justify-between gap-2">
             <span id="mapClickBannerText" class="font-semibold">Silakan klik lokasi mana saja pada peta di sebelah kanan...</span>
             <button type="button" onclick="cancelMapPickMode()" class="px-2 py-1 bg-amber-200 hover:bg-amber-300 rounded text-[11px] font-bold">Batal</button>
           </div>
 
-          <!-- DAFTAR KARTU TITIK RUTE -->
           <div id="stopsContainer" class="space-y-3"></div>
 
           <div class="mt-4 flex flex-wrap gap-2">
@@ -239,26 +279,32 @@
           <div class="space-y-3 text-xs">
             <div class="grid grid-cols-2 gap-3">
               <div>
+                <label class="block font-semibold text-slate-700 mb-1">Sewa Armada (Rp)</label>
+                <input type="number" id="busRentCost" value="3800000" step="50000" oninput="updateAll()" class="w-full px-3 py-2 border border-slate-300 rounded-lg" />
+              </div>
+              <div>
+                <label class="block font-semibold text-slate-700 mb-1">Skema Sewa &amp; BBM</label>
+                <select id="busRentScheme" onchange="updateAll()" class="w-full px-3 py-2 border border-slate-300 rounded-lg bg-white font-semibold text-slate-800">
+                  <option value="per_day">Per Hari (Belum Termasuk BBM)</option>
+                  <option value="lump_sum">Borongan Total (Belum Termasuk BBM)</option>
+                  <option value="per_day_inc_fuel">Per Hari (Sudah Termasuk BBM)</option>
+                  <option value="lump_sum_inc_fuel">Borongan Total (Sudah Termasuk BBM)</option>
+                </select>
+              </div>
+            </div>
+
+            <div id="fuelIncludedNotice" class="hidden p-2.5 rounded-lg bg-blue-50 border border-blue-200 text-blue-800 text-[11px]">
+              <b>Mode Sewa Termasuk BBM:</b> Estimasi liter &amp; nominal BBM di bawah tetap dihitung sebagai kontrol referensi, tetapi tidak ditambahkan lagi ke total tagihan RAB (Rp 0).
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div>
                 <label class="block font-semibold text-slate-700 mb-1">Harga BBM / Liter (Rp)</label>
                 <input type="number" id="fuelPrice" value="6800" step="100" oninput="updateAll()" class="w-full px-3 py-2 border border-slate-300 rounded-lg" />
               </div>
               <div>
                 <label class="block font-semibold text-slate-700 mb-1">Rasio BBM (Km / Liter)</label>
                 <input type="number" id="fuelRatio" value="3.5" step="0.1" min="0.5" oninput="updateAll()" class="w-full px-3 py-2 border border-slate-300 rounded-lg" />
-              </div>
-            </div>
-
-            <div class="grid grid-cols-2 gap-3">
-              <div>
-                <label class="block font-semibold text-slate-700 mb-1">Sewa Armada (Rp)</label>
-                <input type="number" id="busRentCost" value="3800000" step="50000" oninput="updateAll()" class="w-full px-3 py-2 border border-slate-300 rounded-lg" />
-              </div>
-              <div>
-                <label class="block font-semibold text-slate-700 mb-1">Skema Sewa Armada</label>
-                <select id="busRentScheme" onchange="updateAll()" class="w-full px-3 py-2 border border-slate-300 rounded-lg bg-white">
-                  <option value="per_day">Per Hari (&times; Jumlah Hari)</option>
-                  <option value="lump_sum">Paket Borongan Total</option>
-                </select>
               </div>
             </div>
 
@@ -286,7 +332,7 @@
 
             <div class="grid grid-cols-2 gap-3">
               <div>
-                <label class="block font-semibold text-slate-700 mb-1">Banner, P3K &amp; Dokumentasi (Rp)</label>
+                <label class="block font-semibold text-slate-700 mb-1">Spanduk, P3K &amp; Dokumentasi (Rp)</label>
                 <input type="number" id="miscCost" value="350000" step="25000" oninput="updateAll()" class="w-full px-3 py-2 border border-slate-300 rounded-lg" />
               </div>
               <div>
@@ -298,7 +344,7 @@
         </section>
       </div>
 
-      <!-- KOLOM KANAN: PETA RIIL, RINGKASAN, RUNDOWN MULTI-HARI & TABEL RAB -->
+      <!-- KOLOM KANAN: PETA RIIL, RUNDOWN, RAB & GENERATOR SPANDUK -->
       <div class="lg:col-span-7 space-y-5">
 
         <!-- KARTU RINGKASAN METRIK -->
@@ -325,71 +371,227 @@
           </div>
         </div>
 
-        <!-- PETA RUTE INTERAKTIF -->
-        <section class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm card-box">
+        <!-- PETA RUTE INTERAKTIF + TOMBOL DOWNLOAD GAMBAR PETA -->
+        <section id="mapExportCard" class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm card-box">
           <div class="flex flex-wrap items-center justify-between gap-2 mb-2.5">
             <div>
               <h2 class="text-sm font-extrabold text-slate-900">Peta Jalur Perjalanan Riil</h2>
               <div class="flex flex-wrap items-center gap-4 mt-1 text-[11px] font-semibold text-slate-600">
                 <span class="inline-flex items-center gap-1.5">
                   <span class="w-4 h-1.5 rounded-full bg-blue-600 inline-block"></span>
-                  Rute Berangkat (Menuju Tujuan)
+                  Rute Berangkat
                 </span>
                 <span class="inline-flex items-center gap-1.5">
                   <span class="w-4 h-1.5 rounded-full bg-amber-400 border border-amber-600 inline-block"></span>
-                  Rute Pulang (Kembali)
+                  Rute Pulang
                 </span>
-                <span class="text-slate-400 font-normal">&bull; Pin dapat digeser (drag)</span>
+                <span class="text-slate-400 font-normal no-print">&bull; Pin dapat digeser (drag)</span>
               </div>
             </div>
-            <button type="button" onclick="fitMapBounds()" class="no-print px-2.5 py-1 text-xs font-semibold rounded-lg border border-slate-300 hover:bg-slate-50 text-slate-700">
-              Paskan Zoom Peta
-            </button>
+            <div class="no-print flex flex-wrap items-center gap-1.5">
+              <button type="button" onclick="fitMapBounds()" class="px-2.5 py-1.5 text-xs font-semibold rounded-lg border border-slate-300 hover:bg-slate-50 text-slate-700">
+                Paskan Zoom
+              </button>
+              <button type="button" onclick="downloadMapImage()" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-blue-600 hover:bg-blue-700 text-white shadow-sm flex items-center gap-1">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                Download Peta (PNG)
+              </button>
+            </div>
           </div>
           <div id="map"></div>
         </section>
 
-        <!-- TABEL RUNDOWN PERJALANAN MULTI-HARI -->
-        <section class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm card-box">
-          <div class="flex items-center justify-between mb-3">
+        <!-- AREA DOKUMEN A4 (RUNDOWN JADWAL & RINCIAN BIAYA RAB) -->
+        <div id="a4DocumentArea" class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-5 card-box">
+          
+          <!-- BARIS TOMBOL DOWNLOAD A4 (TIDAK IKUT TER-CAPTURE) -->
+          <div class="no-print flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-slate-200">
             <div>
-              <h2 class="text-sm font-extrabold text-slate-900">Rundown Jadwal &amp; Segmen Perjalanan</h2>
-              <p class="text-[11px] text-slate-500">Otomatis membagi hari kalender sesuai akumulasi waktu tempuh dan durasi kegiatan.</p>
+              <span class="text-xs font-extrabold text-slate-900 uppercase tracking-wide">Dokumen Kitab Rute &amp; Biaya (Format A4)</span>
+              <p class="text-[11px] text-slate-500">Unduh rundown jadwal &amp; rincian RAB dalam ukuran kertas A4 siap cetak atau bagikan ke WhatsApp.</p>
+            </div>
+            <div class="flex flex-wrap items-center gap-2">
+              <button type="button" onclick="exportA4Document('png')" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-slate-800 hover:bg-slate-700 text-white flex items-center gap-1.5 transition">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                Download A4 (Gambar)
+              </button>
+              <button type="button" onclick="exportA4Document('pdf')" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-rose-600 hover:bg-rose-700 text-white flex items-center gap-1.5 transition">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                Download A4 (PDF)
+              </button>
             </div>
           </div>
 
-          <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse text-xs">
-              <thead>
-                <tr class="bg-slate-100 text-slate-700 border-b border-slate-200">
-                  <th class="py-2 px-2.5 font-bold">No</th>
-                  <th class="py-2 px-2.5 font-bold">Lokasi / Titik Rute</th>
-                  <th class="py-2 px-2.5 font-bold">Jarak &amp; Tempuh</th>
-                  <th class="py-2 px-2.5 font-bold">Tiba</th>
-                  <th class="py-2 px-2.5 font-bold">Durasi Singgah</th>
-                  <th class="py-2 px-2.5 font-bold">Berangkat</th>
-                </tr>
-              </thead>
-              <tbody id="rundownTableBody" class="divide-y divide-slate-200"></tbody>
-            </table>
+          <!-- KOP RESMI DI DALAM AREA EXPORT A4 -->
+          <div class="border-b-2 border-slate-900 pb-3 flex flex-wrap justify-between items-end gap-2">
+            <div>
+              <p class="text-[10px] uppercase tracking-widest font-bold text-emerald-700" id="docOrganizerLabel">Keluarga Besar &amp; Jamaah Banyubiru</p>
+              <h2 class="text-lg font-extrabold text-slate-900 uppercase" id="docTripTitle">Ziarah &amp; Wisata Pantai Karang Jahe Rembang</h2>
+              <p class="text-xs text-slate-600 mt-0.5" id="docDateSubtitle">Tanggal: -</p>
+            </div>
+            <div class="text-right text-xs">
+              <span class="inline-block px-2.5 py-0.5 rounded bg-slate-100 border border-slate-300 font-bold text-slate-800" id="docMetaBadge">1 Hari 0 Malam &bull; 1 Armada &bull; 50 Peserta</span>
+            </div>
           </div>
-        </section>
 
-        <!-- TABEL RINCIAN ANGGARAN BIAYA (RAB) -->
-        <section class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm card-box">
-          <h2 class="text-sm font-extrabold text-slate-900 mb-3">Rincian Estimasi Biaya Perjalanan (RAB)</h2>
-          <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse text-xs">
-              <thead>
-                <tr class="bg-slate-100 text-slate-700 border-b border-slate-200">
-                  <th class="py-2 px-2.5 font-bold">Komponen Biaya</th>
-                  <th class="py-2 px-2.5 font-bold">Keterangan / Volume</th>
-                  <th class="py-2 px-2.5 font-bold text-right">Subtotal (Rp)</th>
-                </tr>
-              </thead>
-              <tbody id="rabTableBody" class="divide-y divide-slate-200"></tbody>
-            </table>
+          <!-- TABEL RUNDOWN PERJALANAN MULTI-HARI -->
+          <div>
+            <h3 class="text-xs font-extrabold text-slate-900 uppercase tracking-wide mb-2">A. Rundown Jadwal &amp; Segmen Perjalanan</h3>
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr class="bg-slate-100 text-slate-700 border-y border-slate-300">
+                    <th class="py-2 px-2.5 font-bold">No</th>
+                    <th class="py-2 px-2.5 font-bold">Lokasi / Titik Rute</th>
+                    <th class="py-2 px-2.5 font-bold">Jarak &amp; Tempuh</th>
+                    <th class="py-2 px-2.5 font-bold">Tiba</th>
+                    <th class="py-2 px-2.5 font-bold">Durasi Singgah</th>
+                    <th class="py-2 px-2.5 font-bold">Berangkat</th>
+                  </tr>
+                </thead>
+                <tbody id="rundownTableBody" class="divide-y divide-slate-200"></tbody>
+              </table>
+            </div>
           </div>
+
+          <!-- TABEL RINCIAN ANGGARAN BIAYA (RAB) -->
+          <div>
+            <h3 class="text-xs font-extrabold text-slate-900 uppercase tracking-wide mb-2">B. Rincian Estimasi Biaya Perjalanan (RAB)</h3>
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr class="bg-slate-100 text-slate-700 border-y border-slate-300">
+                    <th class="py-2 px-2.5 font-bold">Komponen Biaya</th>
+                    <th class="py-2 px-2.5 font-bold">Keterangan / Volume</th>
+                    <th class="py-2 px-2.5 font-bold text-right">Subtotal (Rp)</th>
+                  </tr>
+                </thead>
+                <tbody id="rabTableBody" class="divide-y divide-slate-200"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. STUDIO GENERATOR SPANDUK FOTO BERSAMA & KACA BUS -->
+        <section class="no-print bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-6">
+          <div class="border-b border-slate-200 pb-3 flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <h2 class="text-sm font-extrabold text-slate-900 uppercase tracking-wide">4. Studio Desain Spanduk Rombongan &amp; Stiker Bus</h2>
+              <p class="text-[11px] text-slate-500">Otomatis sinkron dengan nama kegiatan, tanggal, dan rute perjalanan di atas.</p>
+            </div>
+            <div class="flex items-center gap-2 text-xs">
+              <label class="font-semibold text-slate-700">Tema Warna:</label>
+              <select id="bannerTheme" onchange="updateBanners()" class="px-2.5 py-1.5 border border-slate-300 rounded-lg bg-white font-semibold">
+                <option value="emerald">Hijau Zamrud &amp; Emas (Religi / Wisata)</option>
+                <option value="navy">Biru Dongker &amp; Kuning (Korporat / Umum)</option>
+                <option value="maroon">Merah Marun &amp; Emas (Keluarga Besar)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- A. SPANDUK BESAR FOTO BERSAMA (RASIO 3:1 — REKOMENDASI CETAK 300 x 100 CM) -->
+          <div class="space-y-2.5">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <h3 class="text-xs font-extrabold text-slate-800">A. Spanduk Besar Foto Bersama (Rasio 3:1 &bull; Ukuran Ideal 300 &times; 100 cm)</h3>
+                <p class="text-[11px] text-slate-500">Cocok untuk bentangan foto bersama seluruh peserta di lokasi wisata.</p>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <button type="button" onclick="downloadBanner('largeBannerCanvas', 'Spanduk-Besar-Rombongan', 'png')" class="px-2.5 py-1.5 text-[11px] font-bold rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white">
+                  Download PNG
+                </button>
+                <button type="button" onclick="downloadBanner('largeBannerCanvas', 'Spanduk-Besar-Rombongan', 'pdf')" class="px-2.5 py-1.5 text-[11px] font-bold rounded-lg bg-slate-800 hover:bg-slate-700 text-white">
+                  Download PDF
+                </button>
+              </div>
+            </div>
+
+            <!-- PREVIEW SPANDUK BESAR -->
+            <div class="overflow-x-auto pb-1">
+              <div id="largeBannerCanvas" class="w-full min-w-[680px] aspect-[3/1] rounded-xl p-6 flex flex-col justify-between relative overflow-hidden shadow-md border-4 border-amber-400 bg-gradient-to-r from-emerald-950 via-emerald-800 to-teal-900 text-white">
+                <!-- Ornamen Sudut Dekoratif -->
+                <div class="absolute -right-12 -top-12 w-48 h-48 rounded-full bg-white/5 pointer-events-none"></div>
+                <div class="absolute -left-10 -bottom-14 w-44 h-44 rounded-full bg-amber-400/10 pointer-events-none"></div>
+
+                <div class="flex items-center justify-between z-10">
+                  <span id="lbOrganizer" class="px-3 py-1 rounded-full bg-amber-400 text-slate-950 text-[11px] font-extrabold uppercase tracking-wider shadow-sm">
+                    KELUARGA BESAR &amp; JAMAAH BANYUBIRU
+                  </span>
+                  <span id="lbDate" class="text-xs font-bold text-amber-200 tracking-wide">
+                    Senin, 23 Nov 2026
+                  </span>
+                </div>
+
+                <div class="my-auto text-center z-10 px-4">
+                  <h4 id="lbTitle" class="text-2xl sm:text-3xl font-black uppercase tracking-tight leading-tight drop-shadow">
+                    ZIARAH &amp; WISATA PANTAI KARANG JAHE REMBANG
+                  </h4>
+                  <p id="lbRouteTrail" class="mt-2 text-xs sm:text-sm font-semibold text-emerald-100 tracking-wide">
+                    Rute: Banyubiru &bull; Masjid Agung Demak &bull; Pantai Karang Jahe &bull; Menara Kudus
+                  </p>
+                </div>
+
+                <div class="flex items-center justify-between text-[11px] text-emerald-200 border-t border-white/15 pt-2 z-10">
+                  <span>Semoga Perjalanan Selamat, Lancar &amp; Penuh Berkah</span>
+                  <span id="lbBusBadge" class="font-bold text-amber-300">ROMBONGAN BUS 01</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- B. SPANDUK KECIL / STIKER KACA DEPAN & BELAKANG BUS (RASIO 4:1 — REKOMENDASI CETAK 120 x 30 CM) -->
+          <div class="space-y-2.5 pt-2 border-t border-slate-200">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <h3 class="text-xs font-extrabold text-slate-800">B. Spanduk / Stiker Kaca Depan &amp; Belakang Bus (Rasio 4:1 &bull; Ukuran Ideal 120 &times; 30 cm)</h3>
+                <p class="text-[11px] text-slate-500">Kontras tinggi dengan nomor armada besar agar peserta mudah mengenali busnya dari kejauhan.</p>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <button type="button" onclick="downloadBanner('smallBusBannerCanvas', 'Spanduk-Kaca-Bus', 'png')" class="px-2.5 py-1.5 text-[11px] font-bold rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white">
+                  Download PNG
+                </button>
+                <button type="button" onclick="downloadBanner('smallBusBannerCanvas', 'Spanduk-Kaca-Bus', 'pdf')" class="px-2.5 py-1.5 text-[11px] font-bold rounded-lg bg-slate-800 hover:bg-slate-700 text-white">
+                  Download PDF
+                </button>
+              </div>
+            </div>
+
+            <!-- PREVIEW SPANDUK KECIL BUS -->
+            <div class="overflow-x-auto pb-1">
+              <div id="smallBusBannerCanvas" class="w-full min-w-[680px] aspect-[4/1] rounded-xl flex items-stretch overflow-hidden shadow-md border-4 border-slate-900 bg-white">
+                <!-- Kotak Nomor Bus Kontras Tinggi -->
+                <div id="sbBusBox" class="w-44 bg-amber-400 text-slate-950 flex flex-col items-center justify-center p-3 border-r-4 border-slate-900 shrink-0">
+                  <span class="text-[10px] font-extrabold uppercase tracking-widest">ARMADA</span>
+                  <span id="sbBusNumber" class="text-2xl sm:text-3xl font-black leading-none mt-1 text-center">BUS 01</span>
+                </div>
+
+                <!-- Informasi Rombongan & Tujuan -->
+                <div id="sbMainBox" class="flex-1 bg-emerald-900 text-white px-5 py-3 flex flex-col justify-center">
+                  <div class="flex items-center justify-between gap-2">
+                    <span id="sbOrganizer" class="text-[11px] font-bold uppercase tracking-wider text-amber-300 truncate">
+                      KELUARGA BESAR &amp; JAMAAH BANYUBIRU
+                    </span>
+                    <span id="sbDate" class="text-[11px] font-bold text-white/90 shrink-0">
+                      23 Nov 2026
+                    </span>
+                  </div>
+                  <h4 id="sbTitle" class="text-lg sm:text-xl font-black uppercase tracking-tight leading-snug mt-0.5 truncate">
+                    ZIARAH &amp; WISATA PANTAI KARANG JAHE REMBANG
+                  </h4>
+                  <p id="sbRouteTrail" class="text-xs font-semibold text-emerald-100 truncate mt-0.5">
+                    Tujuan: Masjid Agung Demak &bull; Pantai Karang Jahe &bull; Menara Kudus
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
         </section>
 
       </div>
@@ -473,6 +675,11 @@
       return `${hari[dateObj.getDay()]}, ${dateObj.getDate()} ${bulan[dateObj.getMonth()]} ${dateObj.getFullYear()}`;
     }
 
+    function formatDateShort(dateObj) {
+      const bulan = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agt", "Sep", "Okt", "Nov", "Des"];
+      return `${dateObj.getDate()} ${bulan[dateObj.getMonth()]} ${dateObj.getFullYear()}`;
+    }
+
     function handleDateChange(changedType) {
       const startEl = document.getElementById("startDate");
       const endEl = document.getElementById("endDate");
@@ -484,10 +691,25 @@
       updateAll();
     }
 
+    function toggleSpeedMode() {
+      const selectedMode = document.querySelector('input[name="speedMode"]:checked').value;
+      const osrmBox = document.getElementById("osrmBusOptionBox");
+      const customBox = document.getElementById("customSpeedInputBox");
+
+      if (selectedMode === "custom_speed") {
+        osrmBox.classList.add("opacity-50", "pointer-events-none");
+        customBox.classList.remove("hidden");
+      } else {
+        osrmBox.classList.remove("opacity-50", "pointer-events-none");
+        customBox.classList.add("hidden");
+      }
+      updateAll();
+    }
+
     function getTripDaysAndNights() {
       const sVal = document.getElementById("startDate").value;
       const eVal = document.getElementById("endDate").value;
-      if (!sVal || !eVal) return { days: 1, nights: 0, startObj: new Date() };
+      if (!sVal || !eVal) return { days: 1, nights: 0, startObj: new Date(), endObj: new Date() };
 
       const sDate = new Date(sVal + "T00:00:00");
       const eDate = new Date(eVal + "T00:00:00");
@@ -498,13 +720,14 @@
     }
 
     // =========================================================================
-    // INISIALISASI PETA LEAFLET (OPENSTREETMAP)
+    // INISIALISASI PETA LEAFLET (OPENSTREETMAP + preferCanvas UNTUK EXPORT PNG)
     // =========================================================================
     function initMap() {
-      map = L.map("map").setView([-7.02, 110.88], 9);
+      map = L.map("map", { preferCanvas: true }).setView([-7.02, 110.88], 9);
 
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         maxZoom: 19,
+        crossOrigin: true,
         attribution: '&copy; OpenStreetMap contributors'
       }).addTo(map);
 
@@ -823,7 +1046,7 @@
     }
 
     // =========================================================================
-    // RENDER DAFTAR KARTU TITIK RUTE DI PANEL KIRI (IKON SVG MURNI)
+    // RENDER DAFTAR KARTU TITIK RUTE DI PANEL KIRI
     // =========================================================================
     function renderStopsList() {
       const container = document.getElementById("stopsContainer");
@@ -845,7 +1068,6 @@
 
           return `
           <div class="border border-slate-200 rounded-xl p-3 bg-slate-50/70 space-y-2.5">
-            <!-- Baris Header Titik -->
             <div class="flex items-center justify-between gap-2">
               <div class="flex items-center gap-2 min-w-0">
                 <span class="w-6 h-6 rounded-full ${badgeColor} text-white text-xs font-extrabold flex items-center justify-center shrink-0">
@@ -882,7 +1104,6 @@
               </div>
             </div>
 
-            <!-- Dropdown Pilih Lokasi Populer -->
             <div>
               <select onchange="applyPresetLocation(${idx}, this.value)" class="w-full px-2.5 py-1.5 text-xs border border-slate-300 rounded-lg bg-white text-slate-700">
                 <option value="">-- Pilih Cepat Lokasi Populer --</option>
@@ -890,7 +1111,6 @@
               </select>
             </div>
 
-            <!-- Pencarian Alamat Riil -->
             <div class="relative">
               <div class="flex gap-1.5">
                 <input type="text" id="search-input-${idx}" value="${escapeAttr(stop.name)}"
@@ -906,7 +1126,6 @@
               <div id="search-results-${idx}" class="hidden mt-1 bg-white border border-slate-300 rounded-lg shadow-lg max-h-40 overflow-y-auto z-20"></div>
             </div>
 
-            <!-- Koordinat & Opsi Waypoint -->
             <div class="flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-500">
               <span>Lat: <b>${stop.lat.toFixed(4)}</b>, Lng: <b>${stop.lng.toFixed(4)}</b></span>
               ${
@@ -919,7 +1138,6 @@
               }
             </div>
 
-            <!-- Durasi Singgah, Tiket & Parkir -->
             ${
               !stop.isWaypoint
                 ? `<div class="grid grid-cols-3 gap-2 pt-1 border-t border-slate-200/80 text-[11px]">
@@ -1005,7 +1223,6 @@
         const route = data.routes[0];
         routeLayer.clearLayers();
 
-        // Gambar setiap segmen: Biru (#2563eb) untuk rute berangkat, Kuning (#eab308) untuk rute pulang
         route.legs.forEach((leg, legIdx) => {
           const isReturnLeg = legIdx >= turnaroundIdx;
           const legCoords = [];
@@ -1026,7 +1243,6 @@
           }
 
           if (isReturnLeg) {
-            // Garis tepi gelap tipis agar kuning tetap jelas di atas peta terang
             L.polyline(legCoords, {
               color: "#854d0e",
               weight: 7,
@@ -1054,8 +1270,6 @@
           durationSeconds: leg.duration,
           isFallback: false
         }));
-
-        document.getElementById("statRouteStatus").textContent = "Jalur jalan raya riil (OSRM)";
       } catch (err) {
         if (err.name === "AbortError") return;
 
@@ -1085,7 +1299,6 @@
         }
 
         fitMapBounds();
-        document.getElementById("statRouteStatus").textContent = "Mode estimasi jalan (offline)";
       }
 
       updateAll();
@@ -1134,37 +1347,64 @@
       return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     }
 
+    function getSegmentDurationSeconds(seg) {
+      const speedMode = document.querySelector('input[name="speedMode"]:checked').value;
+      if (speedMode === "custom_speed") {
+        const avgSpeedKmh = Math.max(10, Number(document.getElementById("customAvgSpeed").value) || 50);
+        const distKm = seg.distanceMeters / 1000;
+        return (distKm / avgSpeedKmh) * 3600;
+      } else {
+        const isBusMode = document.getElementById("busMode").checked;
+        return seg.durationSeconds * (isBusMode ? 1.2 : 1.0);
+      }
+    }
+
     // =========================================================================
-    // UPDATE RUNDOWN MULTI-HARI & KALKULASI ANGGARAN BIAYA (RAB)
+    // UPDATE RUNDOWN, RAB & SPANDUK
     // =========================================================================
     function updateAll() {
       const tripName = document.getElementById("tripName").value || "Perjalanan Rombongan";
+      const organizerName = document.getElementById("organizerName").value || "Panitia Wisata Rombongan";
       const startTimeStr = document.getElementById("startTime").value || "06:00";
       const paxCount = Math.max(1, Number(document.getElementById("paxCount").value) || 1);
       const busCount = Math.max(1, Number(document.getElementById("busCount").value) || 1);
-      const isBusMode = document.getElementById("busMode").checked;
-      const speedFactor = isBusMode ? 1.2 : 1.0;
+      const speedMode = document.querySelector('input[name="speedMode"]:checked').value;
 
       const { days, nights, startObj, endObj } = getTripDaysAndNights();
       const durationLabel = `${days} Hari ${nights} Malam`;
+      const dateRangeText =
+        endObj && days > 1
+          ? `${formatDateIndo(startObj)} s.d. ${formatDateIndo(endObj)}`
+          : `${formatDateIndo(startObj)}`;
+
       document.getElementById("tripDurationPill").textContent = durationLabel;
       document.getElementById("statDurationSummary").textContent = durationLabel;
       document.getElementById("statPaxSummary").textContent = `Untuk ${paxCount} Peserta (${busCount} Armada)`;
 
+      if (speedMode === "custom_speed") {
+        const spd = Number(document.getElementById("customAvgSpeed").value) || 50;
+        document.getElementById("statRouteStatus").textContent = `Rata-rata manual ${spd} km/jam`;
+      } else {
+        document.getElementById("statRouteStatus").textContent = "Standar jalan raya OSRM";
+      }
+
+      // Header Cetak & Export A4
       document.getElementById("printTitle").textContent = tripName;
-      document.getElementById("printSubtitle").textContent =
-        endObj && days > 1
-          ? `Tanggal: ${formatDateIndo(startObj)} s.d. ${formatDateIndo(endObj)}`
-          : `Tanggal: ${formatDateIndo(startObj)}`;
+      document.getElementById("printSubtitle").textContent = `Tanggal: ${dateRangeText}`;
       document.getElementById("printDurationBadge").textContent = `Durasi: ${durationLabel}`;
       document.getElementById("printArmadaBadge").textContent = `Armada: ${busCount} Unit • ${paxCount} Peserta`;
+
+      document.getElementById("docOrganizerLabel").textContent = organizerName;
+      document.getElementById("docTripTitle").textContent = tripName;
+      document.getElementById("docDateSubtitle").textContent = `Tanggal: ${dateRangeText} • Jam Berangkat: ${startTimeStr} WIB`;
+      document.getElementById("docMetaBadge").textContent = `${durationLabel} • ${busCount} Armada • ${paxCount} Peserta`;
 
       let totalMeters = 0;
       let totalDriveSeconds = 0;
 
       segmentData.forEach((seg) => {
         totalMeters += seg.distanceMeters;
-        totalDriveSeconds += seg.durationSeconds * speedFactor;
+        totalDriveSeconds += getSegmentDurationSeconds(seg);
       });
 
       const totalKm = totalMeters / 1000;
@@ -1175,6 +1415,7 @@
       document.getElementById("statDistance").textContent = `${totalKm.toFixed(1)} km`;
       document.getElementById("statDriveTime").textContent = `${driveHours} Jam ${driveRemMins} Mnt`;
 
+      // Render Tabel Rundown Multi-Hari
       const [startH, startM] = startTimeStr.split(":").map(Number);
       let currentTotalMinutes = startH * 60 + startM;
       let currentDayIndex = 0;
@@ -1203,7 +1444,7 @@
         if (idx > 0 && segmentData[idx - 1]) {
           const seg = segmentData[idx - 1];
           const segKm = (seg.distanceMeters / 1000).toFixed(1);
-          const segMins = Math.round((seg.durationSeconds * speedFactor) / 60);
+          const segMins = Math.round(getSegmentDurationSeconds(seg) / 60);
           currentTotalMinutes += segMins;
 
           const newDayIndex = Math.floor(currentTotalMinutes / 1440);
@@ -1258,25 +1499,38 @@
 
       rundownBody.innerHTML = rundownHtml;
 
+      // Kalkulasi RAB (Mendukung Sewa Termasuk BBM maupun Terpisah)
       const fuelPrice = Number(document.getElementById("fuelPrice").value) || 0;
       const fuelRatio = Math.max(0.5, Number(document.getElementById("fuelRatio").value) || 3.5);
       const busRentCost = Number(document.getElementById("busRentCost").value) || 0;
       const busRentScheme = document.getElementById("busRentScheme").value;
+      const isFuelIncluded = busRentScheme.includes("inc_fuel");
+      const isPerDayScheme = busRentScheme.startsWith("per_day");
+
+      const fuelNoticeEl = document.getElementById("fuelIncludedNotice");
+      if (isFuelIncluded) {
+        fuelNoticeEl.classList.remove("hidden");
+      } else {
+        fuelNoticeEl.classList.add("hidden");
+      }
+
+      const totalFuelLitresPerBus = totalKm / fuelRatio;
+      const totalFuelLitresAll = totalFuelLitresPerBus * busCount;
+      const rawFuelEstimateCost = Math.round(totalFuelLitresAll * fuelPrice);
+      const chargedFuelCost = isFuelIncluded ? 0 : rawFuelEstimateCost;
+
+      document.getElementById("statFuelLitre").textContent = isFuelIncluded
+        ? `Est. ${totalFuelLitresAll.toFixed(1)} L (All-In Sewa)`
+        : `Estimasi ${totalFuelLitresAll.toFixed(1)} L BBM`;
+
+      const totalBusRent = isPerDayScheme ? busRentCost * days * busCount : busRentCost * busCount;
+
       const tollCost = Number(document.getElementById("tollCost").value) || 0;
       const crewCost = Number(document.getElementById("crewCost").value) || 0;
       const mealCostPerDay = Number(document.getElementById("mealCostPerDay").value) || 0;
       const hotelCostPerNight = Number(document.getElementById("hotelCostPerNight").value) || 0;
       const miscCost = Number(document.getElementById("miscCost").value) || 0;
       const contingencyPct = Number(document.getElementById("contingencyPct").value) || 0;
-
-      const totalFuelLitresPerBus = totalKm / fuelRatio;
-      const totalFuelLitresAll = totalFuelLitresPerBus * busCount;
-      const totalFuelCost = Math.round(totalFuelLitresAll * fuelPrice);
-
-      document.getElementById("statFuelLitre").textContent = `Estimasi ${totalFuelLitresAll.toFixed(1)} L BBM`;
-
-      const totalBusRent =
-        busRentScheme === "per_day" ? busRentCost * days * busCount : busRentCost * busCount;
 
       const totalTollCost = tollCost * busCount;
       const totalCrewCost = crewCost * busCount;
@@ -1297,7 +1551,7 @@
 
       const subTotal =
         totalBusRent +
-        totalFuelCost +
+        chargedFuelCost +
         totalTollCost +
         totalCrewCost +
         totalParkingAll +
@@ -1313,59 +1567,69 @@
       document.getElementById("statTotalCost").textContent = formatRupiah(grandTotal);
       document.getElementById("statCostPerPax").textContent = formatRupiah(costPerPax);
 
+      const rentSchemeLabel =
+        busRentScheme === "per_day"
+          ? `${busCount} unit x ${days} hari x ${formatRupiah(busRentCost)} (Belum BBM)`
+          : busRentScheme === "lump_sum"
+          ? `${busCount} unit paket borongan x ${formatRupiah(busRentCost)} (Belum BBM)`
+          : busRentScheme === "per_day_inc_fuel"
+          ? `${busCount} unit x ${days} hari x ${formatRupiah(busRentCost)} (Sudah Termasuk BBM)`
+          : `${busCount} unit paket borongan x ${formatRupiah(busRentCost)} (Sudah Termasuk BBM)`;
+
+      const fuelDescLabel = isFuelIncluded
+        ? `Referensi ${totalKm.toFixed(1)} km / ${fuelRatio} km/L = ${totalFuelLitresAll.toFixed(1)} L (~${formatRupiah(rawFuelEstimateCost)}) — Sudah masuk paket sewa`
+        : `${totalKm.toFixed(1)} km / ${fuelRatio} km/L x ${busCount} unit (${totalFuelLitresAll.toFixed(1)} L x ${formatRupiah(fuelPrice)})`;
+
       const rabItems = [
         {
           name: "Sewa Armada Kendaraan",
-          desc:
-            busRentScheme === "per_day"
-              ? `${busCount} unit x ${days} hari x ${formatRupiah(busRentCost)}`
-              : `${busCount} unit paket borongan x ${formatRupiah(busRentCost)}`,
-          amount: totalBusRent
+          desc: rentSchemeLabel,
+          amountText: formatRupiah(totalBusRent)
         },
         {
           name: "Estimasi Bahan Bakar (BBM)",
-          desc: `${totalKm.toFixed(1)} km / ${fuelRatio} km/L x ${busCount} unit (${totalFuelLitresAll.toFixed(1)} L x ${formatRupiah(fuelPrice)})`,
-          amount: totalFuelCost
+          desc: fuelDescLabel,
+          amountText: isFuelIncluded ? "Rp 0 (Termasuk Sewa)" : formatRupiah(chargedFuelCost)
         },
         {
           name: "Estimasi Tarif Tol",
           desc: `${busCount} unit x ${formatRupiah(tollCost)}`,
-          amount: totalTollCost
+          amountText: formatRupiah(totalTollCost)
         },
         {
           name: "Parkir Destinasi Wisata",
           desc: `${busCount} unit x ${formatRupiah(totalParkingPerBus)} total parkir`,
-          amount: totalParkingAll
+          amountText: formatRupiah(totalParkingAll)
         },
         {
           name: "Tips Driver, Co-Driver & Parkir Umum",
           desc: `${busCount} unit x ${formatRupiah(crewCost)}`,
-          amount: totalCrewCost
+          amountText: formatRupiah(totalCrewCost)
         },
         {
           name: "Tiket Masuk Objek Wisata",
           desc: `${paxCount} peserta x ${formatRupiah(totalTicketPerPax)}`,
-          amount: totalTicketAll
+          amountText: formatRupiah(totalTicketAll)
         },
         {
           name: "Konsumsi Peserta",
           desc: `${paxCount} peserta x ${days} hari x ${formatRupiah(mealCostPerDay)}`,
-          amount: totalMealAll
+          amountText: formatRupiah(totalMealAll)
         },
         {
           name: "Penginapan / Hotel",
           desc: nights > 0 ? `${paxCount} peserta x ${nights} malam x ${formatRupiah(hotelCostPerNight)}` : "Perjalanan 1 hari (0 malam)",
-          amount: totalHotelAll
+          amountText: formatRupiah(totalHotelAll)
         },
         {
-          name: "Banner, P3K & Perlengkapan Panitia",
-          desc: "Paket operasional rombongan",
-          amount: miscCost
+          name: "Spanduk, P3K & Perlengkapan Panitia",
+          desc: "Paket operasional & dokumentasi rombongan",
+          amountText: formatRupiah(miscCost)
         },
         {
           name: `Dana Cadangan Tak Terduga (${contingencyPct}%)`,
           desc: `${contingencyPct}% dari subtotal anggaran`,
-          amount: contingencyCost
+          amountText: formatRupiah(contingencyCost)
         }
       ];
 
@@ -1377,7 +1641,7 @@
           <tr>
             <td class="py-2 px-2.5 font-semibold text-slate-800">${escapeHtml(item.name)}</td>
             <td class="py-2 px-2.5 text-slate-600">${escapeHtml(item.desc)}</td>
-            <td class="py-2 px-2.5 text-right font-bold text-slate-900">${formatRupiah(item.amount)}</td>
+            <td class="py-2 px-2.5 text-right font-bold text-slate-900 whitespace-nowrap">${escapeHtml(item.amountText)}</td>
           </tr>
         `
           )
@@ -1385,13 +1649,184 @@
         `
         <tr class="bg-slate-100 font-extrabold text-slate-900 border-t-2 border-slate-300">
           <td colspan="2" class="py-2.5 px-2.5">TOTAL KESELURUHAN ANGGARAN (RAB)</td>
-          <td class="py-2.5 px-2.5 text-right text-sm">${formatRupiah(grandTotal)}</td>
+          <td class="py-2.5 px-2.5 text-right text-sm whitespace-nowrap">${formatRupiah(grandTotal)}</td>
         </tr>
         <tr class="bg-emerald-50 font-extrabold text-emerald-900">
           <td colspan="2" class="py-2.5 px-2.5">ESTIMASI IURAN / PATUNGAN PER PESERTA (${paxCount} ORANG)</td>
-          <td class="py-2.5 px-2.5 text-right text-sm">${formatRupiah(costPerPax)}</td>
+          <td class="py-2.5 px-2.5 text-right text-sm whitespace-nowrap">${formatRupiah(costPerPax)}</td>
         </tr>
       `;
+
+      updateBanners();
+    }
+
+    // =========================================================================
+    // SINKRONISASI STUDIO SPANDUK BESAR & SPANDUK KECIL BUS
+    // =========================================================================
+    function updateBanners() {
+      const tripName = document.getElementById("tripName").value || "WISATA ROMBONGAN";
+      const organizerName = document.getElementById("organizerName").value || "PANITIA PERJALANAN";
+      const busCode = document.getElementById("busCodeLabel").value || "BUS 01";
+      const theme = document.getElementById("bannerTheme").value;
+
+      const { days, startObj, endObj } = getTripDaysAndNights();
+      const dateStr =
+        endObj && days > 1
+          ? `${formatDateShort(startObj)} - ${formatDateShort(endObj)}`
+          : formatDateIndo(startObj);
+
+      // Ambil daftar destinasi utama (bukan waypoint dan bukan titik pulang duplikat)
+      const mainDestinations = stops
+        .filter((s, idx) => !s.isWaypoint && !(idx === stops.length - 1 && stops.length > 2 && s.name.toLowerCase().includes("pulang")))
+        .map((s) => s.name.split("(")[0].split(",")[0].trim());
+
+      const uniqueDest = [...new Set(mainDestinations)];
+      const routeSummary = uniqueDest.length > 0 ? uniqueDest.join(" \u2022 ") : "Perjalanan Wisata Bersama";
+
+      // Update teks Spanduk Besar
+      document.getElementById("lbOrganizer").textContent = organizerName;
+      document.getElementById("lbDate").textContent = dateStr;
+      document.getElementById("lbTitle").textContent = tripName;
+      document.getElementById("lbRouteTrail").textContent = `Rute: ${routeSummary}`;
+      document.getElementById("lbBusBadge").textContent = `ROMBONGAN ${busCode.toUpperCase()}`;
+
+      // Update teks Spanduk Kecil Bus
+      document.getElementById("sbBusNumber").textContent = busCode.toUpperCase();
+      document.getElementById("sbOrganizer").textContent = organizerName;
+      document.getElementById("sbDate").textContent = formatDateShort(startObj);
+      document.getElementById("sbTitle").textContent = tripName;
+      document.getElementById("sbRouteTrail").textContent = `Tujuan: ${routeSummary}`;
+
+      // Terapkan Tema Warna
+      const largeEl = document.getElementById("largeBannerCanvas");
+      const sbMainEl = document.getElementById("sbMainBox");
+      const sbBusEl = document.getElementById("sbBusBox");
+
+      largeEl.className = "w-full min-w-[680px] aspect-[3/1] rounded-xl p-6 flex flex-col justify-between relative overflow-hidden shadow-md border-4 text-white ";
+      sbMainEl.className = "flex-1 text-white px-5 py-3 flex flex-col justify-center ";
+      sbBusEl.className = "w-44 flex flex-col items-center justify-center p-3 border-r-4 border-slate-900 shrink-0 ";
+
+      if (theme === "navy") {
+        largeEl.className += "border-amber-400 bg-gradient-to-r from-slate-950 via-blue-900 to-indigo-950";
+        sbMainEl.className += "bg-blue-950";
+        sbBusEl.className += "bg-amber-400 text-slate-950";
+      } else if (theme === "maroon") {
+        largeEl.className += "border-amber-300 bg-gradient-to-r from-rose-950 via-red-900 to-amber-950";
+        sbMainEl.className += "bg-red-950";
+        sbBusEl.className += "bg-amber-300 text-slate-950";
+      } else {
+        largeEl.className += "border-amber-400 bg-gradient-to-r from-emerald-950 via-emerald-800 to-teal-900";
+        sbMainEl.className += "bg-emerald-900";
+        sbBusEl.className += "bg-amber-400 text-slate-950";
+      }
+    }
+
+    // =========================================================================
+    // FUNGSI DOWNLOAD GAMBAR (PNG) & PDF UKURAN A4
+    // =========================================================================
+    async function downloadMapImage() {
+      const mapEl = document.getElementById("map");
+      try {
+        const canvas = await html2canvas(mapEl, {
+          useCORS: true,
+          allowTaint: false,
+          scale: 2,
+          backgroundColor: "#ffffff"
+        });
+        const link = document.createElement("a");
+        link.download = `Peta-Rute-Perjalanan-${Date.now()}.png`;
+        link.href = canvas.toDataURL("image/png");
+        link.click();
+      } catch (err) {
+        alert("Gagal mengekspor gambar peta karena pembatasan CORS tile peta. Silakan gunakan fitur Cetak (A4) -> Save as PDF.");
+      }
+    }
+
+    async function exportA4Document(format) {
+      const docEl = document.getElementById("a4DocumentArea");
+      const noPrintEls = docEl.querySelectorAll(".no-print");
+      noPrintEls.forEach((el) => (el.style.display = "none"));
+
+      try {
+        const canvas = await html2canvas(docEl, {
+          scale: 2,
+          backgroundColor: "#ffffff",
+          useCORS: true
+        });
+
+        const imgData = canvas.toDataURL("image/png");
+
+        if (format === "png") {
+          const link = document.createElement("a");
+          link.download = `Kitab-Rute-RAB-A4-${Date.now()}.png`;
+          link.href = imgData;
+          link.click();
+        } else if (format === "pdf") {
+          const { jsPDF } = window.jspdf;
+          const pdf = new jsPDF({
+            orientation: "portrait",
+            unit: "mm",
+            format: "a4"
+          });
+
+          const pageWidth = pdf.internal.pageSize.getWidth();
+          const pageHeight = pdf.internal.pageSize.getHeight();
+          const margin = 10;
+          const usableWidth = pageWidth - margin * 2;
+          const imgHeight = (canvas.height * usableWidth) / canvas.width;
+
+          let heightLeft = imgHeight;
+          let position = margin;
+
+          pdf.addImage(imgData, "PNG", margin, position, usableWidth, imgHeight);
+          heightLeft -= pageHeight - margin * 2;
+
+          while (heightLeft > 0) {
+            position = heightLeft - imgHeight + margin;
+            pdf.addPage();
+            pdf.addImage(imgData, "PNG", margin, position, usableWidth, imgHeight);
+            heightLeft -= pageHeight - margin * 2;
+          }
+
+          pdf.save(`Kitab-Rute-RAB-A4-${Date.now()}.pdf`);
+        }
+      } finally {
+        noPrintEls.forEach((el) => (el.style.display = ""));
+      }
+    }
+
+    async function downloadBanner(elementId, filePrefix, format) {
+      const el = document.getElementById(elementId);
+      const canvas = await html2canvas(el, {
+        scale: 3,
+        backgroundColor: null,
+        useCORS: true
+      });
+
+      const imgData = canvas.toDataURL("image/png");
+
+      if (format === "png") {
+        const link = document.createElement("a");
+        link.download = `${filePrefix}-${Date.now()}.png`;
+        link.href = imgData;
+        link.click();
+      } else {
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF({
+          orientation: "landscape",
+          unit: "mm",
+          format: "a4"
+        });
+        const pageWidth = pdf.internal.pageSize.getWidth();
+        const pageHeight = pdf.internal.pageSize.getHeight();
+        const margin = 10;
+        const usableWidth = pageWidth - margin * 2;
+        const imgHeight = (canvas.height * usableWidth) / canvas.width;
+        const yPos = Math.max(margin, (pageHeight - imgHeight) / 2);
+
+        pdf.addImage(imgData, "PNG", margin, yPos, usableWidth, imgHeight);
+        pdf.save(`${filePrefix}-A4-${Date.now()}.pdf`);
+      }
     }
 
     // =========================================================================
