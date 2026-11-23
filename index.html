@@ -1,0 +1,1353 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Generator Kitab Rute & RAB Perjalanan Rombongan</title>
+
+  <!-- Leaflet CSS (Peta Interaktif Gratis OpenStreetMap) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+  <!-- Tailwind CSS untuk UI & Layout Cetak A4 -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: #f8fafc;
+      color: #0f172a;
+    }
+
+    #map {
+      height: 430px;
+      width: 100%;
+      z-index: 1;
+      border-radius: 0.75rem;
+    }
+
+    .map-crosshair #map {
+      cursor: crosshair !important;
+    }
+
+    .custom-marker {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 30px;
+      height: 30px;
+      border-radius: 9999px;
+      color: #ffffff;
+      font-weight: 800;
+      font-size: 13px;
+      border: 2.5px solid #ffffff;
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.35);
+    }
+
+    /* Konfigurasi Cetak A4 Hemat Tinta */
+    @media print {
+      @page {
+        size: A4 portrait;
+        margin: 12mm;
+      }
+
+      body {
+        background-color: #ffffff !important;
+        color: #000000 !important;
+        font-size: 11px !important;
+      }
+
+      .no-print {
+        display: none !important;
+      }
+
+      .print-only {
+        display: block !important;
+      }
+
+      .print-container {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        box-shadow: none !important;
+        border: none !important;
+      }
+
+      .card-box {
+        border: 1px solid #cbd5e1 !important;
+        box-shadow: none !important;
+        background: #ffffff !important;
+        break-inside: avoid;
+        margin-bottom: 12px !important;
+      }
+
+      #map {
+        height: 290px !important;
+        border: 1px solid #94a3b8 !important;
+      }
+
+      table {
+        width: 100% !important;
+        border-collapse: collapse !important;
+      }
+
+      th, td {
+        border: 1px solid #94a3b8 !important;
+        padding: 5px 6px !important;
+      }
+    }
+  </style>
+</head>
+<body class="antialiased">
+
+  <!-- HEADER NAVIGASI (TIDAK IKUT TERCETAK) -->
+  <header class="no-print bg-white border-b border-slate-200 sticky top-0 z-30">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3.5 flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-extrabold text-lg shadow-sm">
+          KR
+        </div>
+        <div>
+          <h1 class="text-base sm:text-lg font-extrabold text-slate-900 leading-tight">Generator Kitab Rute & RAB Wisata</h1>
+          <p class="text-xs text-slate-500">Peta Jalan Raya Riil (OpenStreetMap + OSRM) â€¢ Multi-Hari â€¢ Siap Cetak A4</p>
+        </div>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-2">
+        <button type="button" onclick="resetDefaultRoute()" class="px-3 py-2 text-xs font-semibold rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 transition">
+          Reset Contoh Rute
+        </button>
+        <button type="button" onclick="window.print()" class="px-4 py-2 text-xs font-bold rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm flex items-center gap-1.5 transition">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+          </svg>
+          Cetak Kitab Rute (A4)
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- KONTEN UTAMA -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 py-6 print-container">
+
+    <!-- KOP DOKUMEN (HANYA MUNCUL SAAT DICETAK A4) -->
+    <div class="hidden print-only border-b-2 border-slate-900 pb-3 mb-4">
+      <div class="flex justify-between items-end">
+        <div>
+          <p class="text-[10px] uppercase tracking-widest font-bold text-slate-600">Dokumen Operasional Perjalanan Rombongan</p>
+          <h1 id="printTitle" class="text-xl font-extrabold text-slate-900 uppercase">KITAB RUTE & ANGGARAN PERJALANAN</h1>
+          <p id="printSubtitle" class="text-xs text-slate-700 mt-0.5"></p>
+        </div>
+        <div class="text-right text-xs">
+          <p class="font-bold text-slate-900" id="printDurationBadge">Durasi: 1 Hari 0 Malam</p>
+          <p class="text-slate-600" id="printArmadaBadge">Armada: 1 Bus Besar â€¢ 50 Peserta</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+      <!-- KOLOM KIRI: INPUT IDENTITAS, TANGGAL & DAFTAR TITIK RUTE -->
+      <div class="lg:col-span-5 space-y-5 no-print">
+
+        <!-- 1. IDENTITAS & RENTANG TANGGAL -->
+        <section class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-sm font-extrabold text-slate-900 uppercase tracking-wide">1. Identitas & Rentang Tanggal</h2>
+            <span id="tripDurationPill" class="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+              1 Hari 0 Malam
+            </span>
+          </div>
+
+          <div class="space-y-3.5">
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Nama Kegiatan / Rombongan</label>
+              <input type="text" id="tripName" value="Ziarah & Wisata Pantai Karang Jahe Rembang" oninput="updateAll()" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none" />
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">Tanggal Berangkat</label>
+                <input type="date" id="startDate" onchange="handleDateChange('start')" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none" />
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">Tanggal Pulang</label>
+                <input type="date" id="endDate" onchange="handleDateChange('end')" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none" />
+              </div>
+            </div>
+
+            <div class="grid grid-cols-3 gap-3">
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">Jam Berangkat</label>
+                <input type="time" id="startTime" value="05:30" onchange="updateAll()" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none" />
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">Jumlah Peserta</label>
+                <input type="number" id="paxCount" value="50" min="1" oninput="updateAll()" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none" />
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">Jumlah Armada</label>
+                <input type="number" id="busCount" value="1" min="1" oninput="updateAll()" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none" />
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between pt-1">
+              <label class="inline-flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" id="busMode" checked onchange="updateAll()" class="w-4 h-4 text-emerald-600 rounded border-slate-300 focus:ring-emerald-500" />
+                <span class="text-xs font-semibold text-slate-700">Mode Bus Besar (+20% estimasi waktu tempuh)</span>
+              </label>
+            </div>
+          </div>
+        </section>
+
+        <!-- 2. TITIK RUTE PERJALANAN (BISA DIKLIK / CARI / PILIH PETA) -->
+        <section class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
+          <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+            <div>
+              <h2 class="text-sm font-extrabold text-slate-900 uppercase tracking-wide">2. Titik Rute & Destinasi</h2>
+              <p class="text-[11px] text-slate-500">Pilih lokasi cepat, ketik cari alamat, atau klik titik langsung di peta.</p>
+            </div>
+            <button type="button" id="btnAddMapMode" onclick="toggleAddPointFromMap()" class="px-2.5 py-1.5 text-xs font-bold rounded-lg border border-blue-200 bg-blue-50 hover:bg-blue-100 text-blue-700 transition">
+              + Klik Peta Tambah Titik
+            </button>
+          </div>
+
+          <!-- BANNER INSTRUKSI SAAT MODE KLIK PETA AKTIF -->
+          <div id="mapClickBanner" class="hidden mb-3 p-2.5 rounded-lg bg-amber-50 border border-amber-300 text-amber-900 text-xs flex items-center justify-between gap-2">
+            <span id="mapClickBannerText" class="font-semibold">Silakan klik lokasi mana saja pada peta di sebelah kanan...</span>
+            <button type="button" onclick="cancelMapPickMode()" class="px-2 py-1 bg-amber-200 hover:bg-amber-300 rounded text-[11px] font-bold">Batal</button>
+          </div>
+
+          <!-- DAFTAR KARTU TITIK RUTE -->
+          <div id="stopsContainer" class="space-y-3"></div>
+
+          <div class="mt-4 flex flex-wrap gap-2">
+            <button type="button" onclick="addStop()" class="flex-1 py-2.5 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition">
+              + Tambah Titik Destinasi
+            </button>
+            <button type="button" onclick="addReturnStartStop()" class="py-2.5 px-3 rounded-xl border border-slate-300 hover:bg-slate-50 text-slate-700 text-xs font-bold transition">
+              + Titik Pulang (Awal)
+            </button>
+          </div>
+        </section>
+
+        <!-- 3. PARAMETER BIAYA & RAB -->
+        <section class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
+          <h2 class="text-sm font-extrabold text-slate-900 uppercase tracking-wide mb-3">3. Parameter Biaya (RAB)</h2>
+
+          <div class="space-y-3 text-xs">
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block font-semibold text-slate-700 mb-1">Harga BBM / Liter (Rp)</label>
+                <input type="number" id="fuelPrice" value="6800" step="100" oninput="updateAll()" class="w-full px-3 py-2 border border-slate-300 rounded-lg" />
+              </div>
+              <div>
+                <label class="block font-semibold text-slate-700 mb-1">Rasio BBM (Km / Liter)</label>
+                <input type="number" id="fuelRatio" value="3.5" step="0.1" min="0.5" oninput="updateAll()" class="w-full px-3 py-2 border border-slate-300 rounded-lg" />
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block font-semibold text-slate-700 mb-1">Sewa Armada (Rp)</label>
+                <input type="number" id="busRentCost" value="3800000" step="50000" oninput="updateAll()" class="w-full px-3 py-2 border border-slate-300 rounded-lg" />
+              </div>
+              <div>
+                <label class="block font-semibold text-slate-700 mb-1">Skema Sewa Armada</label>
+                <select id="busRentScheme" onchange="updateAll()" class="w-full px-3 py-2 border border-slate-300 rounded-lg bg-white">
+                  <option value="per_day">Per Hari (Ã— Jumlah Hari)</option>
+                  <option value="lump_sum">Paket Borongan Total</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block font-semibold text-slate-700 mb-1">Total Estimasi Tol (Rp)</label>
+                <input type="number" id="tollCost" value="450000" step="10000" oninput="updateAll()" class="w-full px-3 py-2 border border-slate-300 rounded-lg" />
+              </div>
+              <div>
+                <label class="block font-semibold text-slate-700 mb-1">Tips Kru & Parkir Umum (Rp)</label>
+                <input type="number" id="crewCost" value="600000" step="25000" oninput="updateAll()" class="w-full px-3 py-2 border border-slate-300 rounded-lg" />
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block font-semibold text-slate-700 mb-1">Konsumsi / Peserta / Hari (Rp)</label>
+                <input type="number" id="mealCostPerDay" value="65000" step="5000" oninput="updateAll()" class="w-full px-3 py-2 border border-slate-300 rounded-lg" />
+              </div>
+              <div>
+                <label class="block font-semibold text-slate-700 mb-1">Hotel / Peserta / Malam (Rp)</label>
+                <input type="number" id="hotelCostPerNight" value="150000" step="10000" oninput="updateAll()" class="w-full px-3 py-2 border border-slate-300 rounded-lg" />
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block font-semibold text-slate-700 mb-1">Banner, P3K & Dokumentasi (Rp)</label>
+                <input type="number" id="miscCost" value="350000" step="25000" oninput="updateAll()" class="w-full px-3 py-2 border border-slate-300 rounded-lg" />
+              </div>
+              <div>
+                <label class="block font-semibold text-slate-700 mb-1">Cadangan Tak Terduga (%)</label>
+                <input type="number" id="contingencyPct" value="5" min="0" max="50" oninput="updateAll()" class="w-full px-3 py-2 border border-slate-300 rounded-lg" />
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- KOLOM KANAN: PETA RIIL, RINGKASAN, RUNDOWN MULTI-HARI & TABEL RAB -->
+      <div class="lg:col-span-7 space-y-5">
+
+        <!-- KARTU RINGKASAN METRIK -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 card-box">
+          <div class="bg-white rounded-xl border border-slate-200 p-3.5 shadow-sm">
+            <p class="text-[11px] font-semibold text-slate-500">Total Jarak Jalan Raya</p>
+            <p id="statDistance" class="text-lg font-extrabold text-slate-900 mt-0.5">0 km</p>
+            <p id="statFuelLitre" class="text-[11px] text-emerald-700 font-semibold mt-0.5">Estimasi 0 L BBM</p>
+          </div>
+          <div class="bg-white rounded-xl border border-slate-200 p-3.5 shadow-sm">
+            <p class="text-[11px] font-semibold text-slate-500">Waktu Tempuh Berkendara</p>
+            <p id="statDriveTime" class="text-lg font-extrabold text-slate-900 mt-0.5">0 Jam 0 Mnt</p>
+            <p id="statRouteStatus" class="text-[11px] text-slate-500 mt-0.5">Menghitung rute...</p>
+          </div>
+          <div class="bg-white rounded-xl border border-slate-200 p-3.5 shadow-sm">
+            <p class="text-[11px] font-semibold text-slate-500">Total Anggaran (RAB)</p>
+            <p id="statTotalCost" class="text-lg font-extrabold text-slate-900 mt-0.5">Rp 0</p>
+            <p id="statDurationSummary" class="text-[11px] text-slate-500 mt-0.5">1 Hari 0 Malam</p>
+          </div>
+          <div class="bg-emerald-600 rounded-xl p-3.5 shadow-sm text-white">
+            <p class="text-[11px] font-semibold text-emerald-100">Patungan Per Peserta</p>
+            <p id="statCostPerPax" class="text-lg font-extrabold mt-0.5">Rp 0</p>
+            <p id="statPaxSummary" class="text-[11px] text-emerald-100 mt-0.5">Untuk 50 Peserta</p>
+          </div>
+        </div>
+
+        <!-- PETA RUTE INTERAKTIF -->
+        <section class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm card-box">
+          <div class="flex flex-wrap items-center justify-between gap-2 mb-2.5">
+            <div>
+              <h2 class="text-sm font-extrabold text-slate-900">Peta Jalur Perjalanan Riil</h2>
+              <p class="text-[11px] text-slate-500">Garis biru mengikuti jaringan jalan raya OpenStreetMap (OSRM). Marker dapat digeser (drag).</p>
+            </div>
+            <button type="button" onclick="fitMapBounds()" class="no-print px-2.5 py-1 text-xs font-semibold rounded-lg border border-slate-300 hover:bg-slate-50 text-slate-700">
+              Paskan Zoom Peta
+            </button>
+          </div>
+          <div id="map"></div>
+        </section>
+
+        <!-- TABEL RUNDOWN PERJALANAN MULTI-HARI -->
+        <section class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm card-box">
+          <div class="flex items-center justify-between mb-3">
+            <div>
+              <h2 class="text-sm font-extrabold text-slate-900">Rundown Jadwal & Segmen Perjalanan</h2>
+              <p class="text-[11px] text-slate-500">Otomatis membagi hari kalender sesuai akumulasi waktu tempuh dan durasi kegiatan.</p>
+            </div>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr class="bg-slate-100 text-slate-700 border-b border-slate-200">
+                  <th class="py-2 px-2.5 font-bold">No</th>
+                  <th class="py-2 px-2.5 font-bold">Lokasi / Titik Rute</th>
+                  <th class="py-2 px-2.5 font-bold">Jarak & Tempuh</th>
+                  <th class="py-2 px-2.5 font-bold">Tiba</th>
+                  <th class="py-2 px-2.5 font-bold">Durasi Singgah</th>
+                  <th class="py-2 px-2.5 font-bold">Berangkat</th>
+                </tr>
+              </thead>
+              <tbody id="rundownTableBody" class="divide-y divide-slate-200"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- TABEL RINCIAN ANGGARAN BIAYA (RAB) -->
+        <section class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm card-box">
+          <h2 class="text-sm font-extrabold text-slate-900 mb-3">Rincian Estimasi Biaya Perjalanan (RAB)</h2>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr class="bg-slate-100 text-slate-700 border-b border-slate-200">
+                  <th class="py-2 px-2.5 font-bold">Komponen Biaya</th>
+                  <th class="py-2 px-2.5 font-bold">Keterangan / Volume</th>
+                  <th class="py-2 px-2.5 font-bold text-right">Subtotal (Rp)</th>
+                </tr>
+              </thead>
+              <tbody id="rabTableBody" class="divide-y divide-slate-200"></tbody>
+            </table>
+          </div>
+        </section>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- LEAFLET JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+
+  <script>
+    // =========================================================================
+    // DATA PRESET LOKASI POPULER (MEMUDAHKAN KLIK CEPAT TANPA KETIK MANUAL)
+    // =========================================================================
+    const PRESET_LOCATIONS = [
+      { label: "Banyubiru, Kab. Semarang (Titik Kumpul)", lat: -7.2981, lng: 110.4222 },
+      { label: "Terminal Bawen, Kab. Semarang", lat: -7.2454, lng: 110.4331 },
+      { label: "Masjid Agung Demak", lat: -6.8946, lng: 110.6373 },
+      { label: "Makam Sunan Kalijaga Kadilangu Demak", lat: -6.9068, lng: 110.6487 },
+      { label: "Menara Kudus & Sunan Kudus", lat: -6.8042, lng: 110.8331 },
+      { label: "Makam Sunan Muria Colo Kudus", lat: -6.6669, lng: 110.8989 },
+      { label: "Kajen Margoyoso Pati (Makam Syekh Mutamakkin)", lat: -6.6095, lng: 111.0531 },
+      { label: "Pantai Karang Jahe, Rembang", lat: -6.6956, lng: 111.4258 },
+      { label: "Kota Tua Lasem, Rembang", lat: -6.6939, lng: 111.4486 },
+      { label: "Masjid Agung Jawa Tengah (MAJT) Semarang", lat: -6.9836, lng: 110.4452 },
+      { label: "Malioboro Yogyakarta", lat: -7.7926, lng: 110.3658 },
+      { label: "Pantai Parangtritis Bantul", lat: -8.0257, lng: 110.3335 },
+      { label: "Candi Borobudur Magelang", lat: -7.6079, lng: 110.2038 },
+      { label: "Masjid Raya Sheikh Zayed Solo", lat: -7.5546, lng: 110.8313 },
+      { label: "Telaga Sarangan Magetan", lat: -7.6766, lng: 111.2165 }
+    ];
+
+    // =========================================================================
+    // STATE APLIKASI
+    // =========================================================================
+    let stops = [];
+    let map = null;
+    let routeLayer = null;
+    let markersLayer = null;
+    let segmentData = [];
+    let mapPickTargetIndex = null; // null = tidak aktif, 'NEW' = tambah titik baru, angka = ganti koordinat titik ke-i
+    let routeFetchController = null;
+
+    // =========================================================================
+    // INISIALISASI SAAT HALAMAN DIMUAT
+    // =========================================================================
+    document.addEventListener("DOMContentLoaded", () => {
+      initDates();
+      initMap();
+      resetDefaultRoute();
+    });
+
+    function initDates() {
+      const today = new Date();
+      const isoToday = formatDateISO(today);
+      document.getElementById("startDate").value = isoToday;
+      document.getElementById("endDate").value = isoToday;
+    }
+
+    function formatDateISO(dateObj) {
+      const y = dateObj.getFullYear();
+      const m = String(dateObj.getMonth() + 1).padStart(2, "0");
+      const d = String(dateObj.getDate()).padStart(2, "0");
+      return `${y}-${m}-${d}`;
+    }
+
+    function formatDateIndo(dateObj) {
+      const hari = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+      const bulan = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agt", "Sep", "Okt", "Nov", "Des"];
+      return `${hari[dateObj.getDay()]}, ${dateObj.getDate()} ${bulan[dateObj.getMonth()]} ${dateObj.getFullYear()}`;
+    }
+
+    function handleDateChange(changedType) {
+      const startEl = document.getElementById("startDate");
+      const endEl = document.getElementById("endDate");
+      if (changedType === "start" && endEl.value < startEl.value) {
+        endEl.value = startEl.value;
+      } else if (changedType === "end" && endEl.value < startEl.value) {
+        startEl.value = endEl.value;
+      }
+      updateAll();
+    }
+
+    function getTripDaysAndNights() {
+      const sVal = document.getElementById("startDate").value;
+      const eVal = document.getElementById("endDate").value;
+      if (!sVal || !eVal) return { days: 1, nights: 0, startObj: new Date() };
+
+      const sDate = new Date(sVal + "T00:00:00");
+      const eDate = new Date(eVal + "T00:00:00");
+      const diffMs = eDate - sDate;
+      const nights = Math.max(0, Math.round(diffMs / (1000 * 60 * 60 * 24)));
+      const days = nights + 1;
+      return { days, nights, startObj: sDate, endObj: eDate };
+    }
+
+    // =========================================================================
+    // INISIALISASI PETA LEAFLET (OPENSTREETMAP)
+    // =========================================================================
+    function initMap() {
+      map = L.map("map").setView([-7.02, 110.88], 9);
+
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 19,
+        attribution: '&copy; OpenStreetMap contributors'
+      }).addTo(map);
+
+      markersLayer = L.layerGroup().addTo(map);
+
+      // Event klik langsung di atas peta
+      map.on("click", async (e) => {
+        if (mapPickTargetIndex === null) return;
+
+        const { lat, lng } = e.latlng;
+        const target = mapPickTargetIndex;
+        cancelMapPickMode();
+
+        const placeName = await reverseGeocode(lat, lng);
+
+        if (target === "NEW") {
+          stops.push({
+            id: Date.now(),
+            name: placeName,
+            lat: Number(lat.toFixed(6)),
+            lng: Number(lng.toFixed(6)),
+            stayValue: 90,
+            stayUnit: "minutes",
+            ticketCost: 0,
+            parkingCost: 25000,
+            isWaypoint: false
+          });
+        } else if (typeof target === "number" && stops[target]) {
+          stops[target].name = placeName;
+          stops[target].lat = Number(lat.toFixed(6));
+          stops[target].lng = Number(lng.toFixed(6));
+        }
+
+        renderStopsList();
+        recalculateRoute();
+      });
+    }
+
+    function fitMapBounds() {
+      if (!map || stops.length === 0) return;
+      const latLngs = stops.map((s) => [s.lat, s.lng]);
+      if (latLngs.length === 1) {
+        map.setView(latLngs[0], 13);
+      } else {
+        map.fitBounds(L.latLngBounds(latLngs), { padding: [40, 40] });
+      }
+    }
+
+    // =========================================================================
+    // MODE KLIK PETA UNTUK MENENTUKAN / MENAMBAH TITIK
+    // =========================================================================
+    function toggleAddPointFromMap() {
+      if (mapPickTargetIndex === "NEW") {
+        cancelMapPickMode();
+        return;
+      }
+      activateMapPickMode("NEW", "Klik lokasi pada peta untuk menambah titik rute baru...");
+    }
+
+    function pickStopFromMap(index) {
+      activateMapPickMode(index, `Klik lokasi pada peta untuk mengganti Titik #${index + 1}...`);
+    }
+
+    function activateMapPickMode(target, message) {
+      mapPickTargetIndex = target;
+      document.body.classList.add("map-crosshair");
+      const banner = document.getElementById("mapClickBanner");
+      document.getElementById("mapClickBannerText").textContent = message;
+      banner.classList.remove("hidden");
+      document.getElementById("map").scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+
+    function cancelMapPickMode() {
+      mapPickTargetIndex = null;
+      document.body.classList.remove("map-crosshair");
+      document.getElementById("mapClickBanner").classList.add("hidden");
+    }
+
+    // =========================================================================
+    // RESET & MANAJEMEN DAFTAR TITIK RUTE
+    // =========================================================================
+    function resetDefaultRoute() {
+      stops = [
+        {
+          id: 1,
+          name: "Banyubiru, Kab. Semarang (Titik Kumpul)",
+          lat: -7.2981,
+          lng: 110.4222,
+          stayValue: 0,
+          stayUnit: "minutes",
+          ticketCost: 0,
+          parkingCost: 0,
+          isWaypoint: false
+        },
+        {
+          id: 2,
+          name: "Masjid Agung Demak",
+          lat: -6.8946,
+          lng: 110.6373,
+          stayValue: 90,
+          stayUnit: "minutes",
+          ticketCost: 0,
+          parkingCost: 30000,
+          isWaypoint: false
+        },
+        {
+          id: 3,
+          name: "Pantai Karang Jahe, Rembang",
+          lat: -6.6956,
+          lng: 111.4258,
+          stayValue: 180,
+          stayUnit: "minutes",
+          ticketCost: 15000,
+          parkingCost: 50000,
+          isWaypoint: false
+        },
+        {
+          id: 4,
+          name: "Menara Kudus & Sunan Kudus",
+          lat: -6.8042,
+          lng: 110.8331,
+          stayValue: 90,
+          stayUnit: "minutes",
+          ticketCost: 0,
+          parkingCost: 30000,
+          isWaypoint: false
+        },
+        {
+          id: 5,
+          name: "Banyubiru, Kab. Semarang (Pulang)",
+          lat: -7.2981,
+          lng: 110.4222,
+          stayValue: 0,
+          stayUnit: "minutes",
+          ticketCost: 0,
+          parkingCost: 0,
+          isWaypoint: false
+        }
+      ];
+      renderStopsList();
+      recalculateRoute();
+    }
+
+    function addStop() {
+      const last = stops[stops.length - 1] || { lat: -7.0, lng: 110.4 };
+      stops.push({
+        id: Date.now(),
+        name: "Destinasi Baru (Ketik / Pilih Lokasi)",
+        lat: Number((last.lat + 0.04).toFixed(6)),
+        lng: Number((last.lng + 0.04).toFixed(6)),
+        stayValue: 60,
+        stayUnit: "minutes",
+        ticketCost: 0,
+        parkingCost: 25000,
+        isWaypoint: false
+      });
+      renderStopsList();
+      recalculateRoute();
+    }
+
+    function addReturnStartStop() {
+      if (stops.length === 0) return;
+      const first = stops[0];
+      stops.push({
+        id: Date.now(),
+        name: first.name + " (Pulang)",
+        lat: first.lat,
+        lng: first.lng,
+        stayValue: 0,
+        stayUnit: "minutes",
+        ticketCost: 0,
+        parkingCost: 0,
+        isWaypoint: false
+      });
+      renderStopsList();
+      recalculateRoute();
+    }
+
+    function removeStop(index) {
+      if (stops.length <= 2) {
+        alert("Minimal harus terdapat 2 titik (titik berangkat dan tujuan).");
+        return;
+      }
+      stops.splice(index, 1);
+      renderStopsList();
+      recalculateRoute();
+    }
+
+    function moveStop(index, direction) {
+      const newIndex = index + direction;
+      if (newIndex < 0 || newIndex >= stops.length) return;
+      const temp = stops[index];
+      stops[index] = stops[newIndex];
+      stops[newIndex] = temp;
+      renderStopsList();
+      recalculateRoute();
+    }
+
+    function applyPresetLocation(index, presetIdx) {
+      if (presetIdx === "") return;
+      const preset = PRESET_LOCATIONS[Number(presetIdx)];
+      if (!preset || !stops[index]) return;
+      stops[index].name = preset.label;
+      stops[index].lat = preset.lat;
+      stops[index].lng = preset.lng;
+      renderStopsList();
+      recalculateRoute();
+    }
+
+    function updateStopField(index, field, value) {
+      if (!stops[index]) return;
+      stops[index][field] = value;
+      if (field === "isWaypoint") {
+        renderStopsList();
+        recalculateRoute();
+      } else {
+        updateAll();
+      }
+    }
+
+    // =========================================================================
+    // PENCARIAN ALAMAT RIIL (PHOTON + NOMINATIM OPENSTREETMAP)
+    // =========================================================================
+    async function searchLocationForStop(index) {
+      const inputEl = document.getElementById(`search-input-${index}`);
+      const resultsBox = document.getElementById(`search-results-${index}`);
+      const query = inputEl ? inputEl.value.trim() : "";
+
+      if (!query) {
+        alert("Ketik nama lokasi, masjid, pantai, atau kota terlebih dahulu.");
+        return;
+      }
+
+      resultsBox.innerHTML = `<div class="p-2 text-[11px] text-slate-500">Mencari koordinat "${escapeHtml(query)}"...</div>`;
+      resultsBox.classList.remove("hidden");
+
+      try {
+        let items = [];
+
+        // 1. Coba Photon API (cepat & berbasis OpenStreetMap)
+        try {
+          const photonRes = await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&limit=5`);
+          if (photonRes.ok) {
+            const photonData = await photonRes.json();
+            if (photonData.features && photonData.features.length > 0) {
+              items = photonData.features.map((f) => {
+                const p = f.properties || {};
+                const labelParts = [p.name, p.city || p.county, p.state].filter(Boolean);
+                return {
+                  name: labelParts.join(", ") || query,
+                  lat: f.geometry.coordinates[1],
+                  lng: f.geometry.coordinates[0]
+                };
+              });
+            }
+          }
+        } catch (err) {
+          // Lanjut fallback ke Nominatim
+        }
+
+        // 2. Fallback ke Nominatim OpenStreetMap jika Photon kosong
+        if (items.length === 0) {
+          const nomRes = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5&countrycodes=id`);
+          if (nomRes.ok) {
+            const nomData = await nomRes.json();
+            items = nomData.map((item) => ({
+              name: item.display_name.split(",").slice(0, 3).join(", "),
+              lat: parseFloat(item.lat),
+              lng: parseFloat(item.lon)
+            }));
+          }
+        }
+
+        if (items.length === 0) {
+          resultsBox.innerHTML = `<div class="p-2 text-[11px] text-rose-600">Lokasi tidak ditemukan. Coba gunakan tombol <b>"Pilih dari Peta"</b>.</div>`;
+          return;
+        }
+
+        resultsBox.innerHTML = items
+          .map(
+            (item, idx) => `
+            <button type="button"
+              onclick="selectSearchedLocation(${index}, ${item.lat}, ${item.lng}, '${escapeAttr(item.name)}')"
+              class="w-full text-left px-2.5 py-1.5 text-[11px] hover:bg-emerald-50 border-b border-slate-100 last:border-b-0 block">
+              <span class="font-bold text-slate-800 block">${escapeHtml(item.name)}</span>
+              <span class="text-[10px] text-slate-500">Koordinat: ${item.lat.toFixed(5)}, ${item.lng.toFixed(5)}</span>
+            </button>
+          `
+          )
+          .join("");
+      } catch (error) {
+        resultsBox.innerHTML = `<div class="p-2 text-[11px] text-rose-600">Gagal terhubung ke server pencarian. Silakan pilih langsung di peta.</div>`;
+      }
+    }
+
+    function selectSearchedLocation(index, lat, lng, name) {
+      if (!stops[index]) return;
+      stops[index].name = name;
+      stops[index].lat = Number(lat.toFixed(6));
+      stops[index].lng = Number(lng.toFixed(6));
+      renderStopsList();
+      recalculateRoute();
+    }
+
+    async function reverseGeocode(lat, lng) {
+      try {
+        const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.display_name) {
+            return data.display_name.split(",").slice(0, 3).join(", ");
+          }
+        }
+      } catch (e) {
+        // Abaikan jika offline
+      }
+      return `Titik Peta (${lat.toFixed(4)}, ${lng.toFixed(4)})`;
+    }
+
+    // =========================================================================
+    // RENDER DAFTAR KARTU TITIK RUTE DI PANEL KIRI
+    // =========================================================================
+    function renderStopsList() {
+      const container = document.getElementById("stopsContainer");
+      const presetOptionsHtml = PRESET_LOCATIONS.map(
+        (loc, i) => `<option value="${i}">${escapeHtml(loc.label)}</option>`
+      ).join("");
+
+      container.innerHTML = stops
+        .map((stop, idx) => {
+          const isFirst = idx === 0;
+          const isLast = idx === stops.length - 1;
+          const badgeColor = isFirst
+            ? "bg-emerald-600"
+            : isLast
+            ? "bg-rose-600"
+            : stop.isWaypoint
+            ? "bg-amber-500"
+            : "bg-blue-600";
+
+          return `
+          <div class="border border-slate-200 rounded-xl p-3 bg-slate-50/70 space-y-2.5">
+            <!-- Baris Header Titik -->
+            <div class="flex items-center justify-between gap-2">
+              <div class="flex items-center gap-2">
+                <span class="w-6 h-6 rounded-full ${badgeColor} text-white text-xs font-extrabold flex items-center justify-center shrink-0">
+                  ${idx + 1}
+                </span>
+                <span class="text-xs font-bold text-slate-800">
+                  ${isFirst ? "Titik Berangkat" : isLast ? "Titik Akhir" : stop.isWaypoint ? "Waypoint / Jalur Utama" : `Destinasi #${idx}`}
+                </span>
+              </div>
+
+              <div class="flex items-center gap-1">
+                <button type="button" onclick="pickStopFromMap(${idx})" title="Klik titik di peta"
+                  class="px-2 py-1 text-[11px] font-bold rounded bg-emerald-100 hover:bg-emerald-200 text-emerald-800 transition">
+                  Pilih dari Peta
+                </button>
+                <button type="button" onclick="moveStop(${idx}, -1)" ${isFirst ? "disabled" : ""}
+                  class="p-1 rounded border border-slate-300 bg-white text-slate-600 disabled:opacity-30 text-xs">â†‘</button>
+                <button type="button" onclick="moveStop(${idx}, 1)" ${isLast ? "disabled" : ""}
+                  class="p-1 rounded border border-slate-300 bg-white text-slate-600 disabled:opacity-30 text-xs">â†“</button>
+                <button type="button" onclick="removeStop(${idx})"
+                  class="p-1 rounded border border-rose-200 bg-rose-50 text-rose-600 hover:bg-rose-100 text-xs font-bold">âœ•</button>
+              </div>
+            </div>
+
+            <!-- Dropdown Pilih Lokasi Populer -->
+            <div>
+              <select onchange="applyPresetLocation(${idx}, this.value)" class="w-full px-2.5 py-1.5 text-xs border border-slate-300 rounded-lg bg-white text-slate-700">
+                <option value="">-- Pilih Cepat Lokasi Populer --</option>
+                ${presetOptionsHtml}
+              </select>
+            </div>
+
+            <!-- Pencarian Alamat Riil -->
+            <div class="relative">
+              <div class="flex gap-1.5">
+                <input type="text" id="search-input-${idx}" value="${escapeAttr(stop.name)}"
+                  oninput="updateStopField(${idx}, 'name', this.value)"
+                  onkeydown="if(event.key==='Enter'){event.preventDefault(); searchLocationForStop(${idx});}"
+                  placeholder="Ketik nama tempat/kota lalu klik Cari..."
+                  class="flex-1 px-2.5 py-1.5 text-xs border border-slate-300 rounded-lg bg-white focus:ring-2 focus:ring-emerald-500 outline-none" />
+                <button type="button" onclick="searchLocationForStop(${idx})"
+                  class="px-3 py-1.5 text-xs font-bold rounded-lg bg-slate-800 hover:bg-slate-700 text-white shrink-0">
+                  Cari
+                </button>
+              </div>
+              <div id="search-results-${idx}" class="hidden mt-1 bg-white border border-slate-300 rounded-lg shadow-lg max-h-40 overflow-y-auto z-20"></div>
+            </div>
+
+            <!-- Koordinat & Opsi Waypoint -->
+            <div class="flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-500">
+              <span>Lat: <b>${stop.lat.toFixed(4)}</b>, Lng: <b>${stop.lng.toFixed(4)}</b></span>
+              ${
+                !isFirst && !isLast
+                  ? `<label class="inline-flex items-center gap-1.5 cursor-pointer text-slate-700 font-semibold">
+                      <input type="checkbox" ${stop.isWaypoint ? "checked" : ""} onchange="updateStopField(${idx}, 'isWaypoint', this.checked)" class="rounded text-amber-600" />
+                      Titik Lewat Saja (Waypoint)
+                    </label>`
+                  : ""
+              }
+            </div>
+
+            <!-- Durasi Singgah, Tiket & Parkir (Sembunyikan jika Waypoint) -->
+            ${
+              !stop.isWaypoint
+                ? `<div class="grid grid-cols-3 gap-2 pt-1 border-t border-slate-200/80 text-[11px]">
+                    <div>
+                      <label class="block text-slate-600 font-semibold mb-0.5">Durasi Singgah</label>
+                      <div class="flex">
+                        <input type="number" min="0" value="${stop.stayValue}" oninput="updateStopField(${idx}, 'stayValue', Number(this.value))"
+                          class="w-full px-2 py-1 border border-slate-300 rounded-l-lg bg-white" />
+                        <select onchange="updateStopField(${idx}, 'stayUnit', this.value)"
+                          class="px-1.5 py-1 border-y border-r border-slate-300 rounded-r-lg bg-slate-100 font-semibold">
+                          <option value="minutes" ${stop.stayUnit === "minutes" ? "selected" : ""}>Mnt</option>
+                          <option value="hours" ${stop.stayUnit === "hours" ? "selected" : ""}>Jam</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div>
+                      <label class="block text-slate-600 font-semibold mb-0.5">Tiket/Org (Rp)</label>
+                      <input type="number" min="0" step="1000" value="${stop.ticketCost}" oninput="updateStopField(${idx}, 'ticketCost', Number(this.value))"
+                        class="w-full px-2 py-1 border border-slate-300 rounded-lg bg-white" />
+                    </div>
+                    <div>
+                      <label class="block text-slate-600 font-semibold mb-0.5">Parkir/Bus (Rp)</label>
+                      <input type="number" min="0" step="5000" value="${stop.parkingCost}" oninput="updateStopField(${idx}, 'parkingCost', Number(this.value))"
+                        class="w-full px-2 py-1 border border-slate-300 rounded-lg bg-white" />
+                    </div>
+                  </div>`
+                : ""
+            }
+          </div>
+          `;
+        })
+        .join("");
+    }
+
+    // =========================================================================
+    // KALKULASI RUTE JALAN RAYA RIIL VIA OSRM API
+    // =========================================================================
+    async function recalculateRoute() {
+      renderMapMarkers();
+
+      if (stops.length < 2) {
+        segmentData = [];
+        updateAll();
+        return;
+      }
+
+      document.getElementById("statRouteStatus").textContent = "Menghitung jalur jalan raya...";
+
+      if (routeFetchController) {
+        routeFetchController.abort();
+      }
+      routeFetchController = new AbortController();
+
+      const coordsParam = stops.map((s) => `${s.lng},${s.lat}`).join(";");
+      const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${coordsParam}?overview=full&geometries=geojson&steps=false`;
+
+      try {
+        const response = await fetch(osrmUrl, { signal: routeFetchController.signal });
+        if (!response.ok) throw new Error("OSRM gagal merespons");
+
+        const data = await response.json();
+        if (data.code !== "Ok" || !data.routes || data.routes.length === 0) {
+          throw new Error("Rute tidak ditemukan");
+        }
+
+        const route = data.routes[0];
+
+        // Gambar garis rute jalan raya riil di peta
+        if (routeLayer) {
+          map.removeLayer(routeLayer);
+        }
+        routeLayer = L.geoJSON(route.geometry, {
+          style: {
+            color: "#0284c7",
+            weight: 5,
+            opacity: 0.85
+          }
+        }).addTo(map);
+
+        fitMapBounds();
+
+        // Simpan jarak (meter) dan durasi (detik) per segmen
+        segmentData = route.legs.map((leg) => ({
+          distanceMeters: leg.distance,
+          durationSeconds: leg.duration,
+          isFallback: false
+        }));
+
+        document.getElementById("statRouteStatus").textContent = "Jalur jalan raya riil (OSRM)";
+      } catch (err) {
+        if (err.name === "AbortError") return;
+
+        // Fallback jarak Haversine jika OSRM sedang sibuk/offline
+        if (routeLayer) {
+          map.removeLayer(routeLayer);
+        }
+        const latLngs = stops.map((s) => [s.lat, s.lng]);
+        routeLayer = L.polyline(latLngs, {
+          color: "#d97706",
+          weight: 4,
+          dashArray: "8, 8"
+        }).addTo(map);
+
+        fitMapBounds();
+
+        segmentData = [];
+        for (let i = 0; i < stops.length - 1; i++) {
+          const distMeters = haversineMeters(stops[i].lat, stops[i].lng, stops[i + 1].lat, stops[i + 1].lng) * 1.25;
+          const durSeconds = (distMeters / 1000 / 45) * 3600;
+          segmentData.push({
+            distanceMeters: distMeters,
+            durationSeconds: durSeconds,
+            isFallback: true
+          });
+        }
+        document.getElementById("statRouteStatus").textContent = "Mode estimasi jalan (offline)";
+      }
+
+      updateAll();
+    }
+
+    function renderMapMarkers() {
+      if (!markersLayer) return;
+      markersLayer.clearLayers();
+
+      stops.forEach((stop, idx) => {
+        const isFirst = idx === 0;
+        const isLast = idx === stops.length - 1;
+        const bg = isFirst ? "#059669" : isLast ? "#e11d48" : stop.isWaypoint ? "#f59e0b" : "#2563eb";
+
+        const icon = L.divIcon({
+          className: "",
+          html: `<div class="custom-marker" style="background-color:${bg};">${idx + 1}</div>`,
+          iconSize: [30, 30],
+          iconAnchor: [15, 15]
+        });
+
+        const marker = L.marker([stop.lat, stop.lng], { icon, draggable: true });
+        marker.bindPopup(`<b>Titik #${idx + 1}</b><br>${escapeHtml(stop.name)}<br><small>Geser pin untuk ubah posisi</small>`);
+
+        marker.on("dragend", async (e) => {
+          const pos = e.target.getLatLng();
+          stops[idx].lat = Number(pos.lat.toFixed(6));
+          stops[idx].lng = Number(pos.lng.toFixed(6));
+          stops[idx].name = await reverseGeocode(pos.lat, pos.lng);
+          renderStopsList();
+          recalculateRoute();
+        });
+
+        marker.addTo(markersLayer);
+      });
+    }
+
+    function haversineMeters(lat1, lon1, lat2, lon2) {
+      const R = 6371000;
+      const toRad = (deg) => (deg * Math.PI) / 180;
+      const dLat = toRad(lat2 - lat1);
+      const dLon = toRad(lon2 - lon1);
+      const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+      return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    }
+
+    // =========================================================================
+    // UPDATE RUNDOWN MULTI-HARI & KALKULASI ANGGARAN BIAYA (RAB)
+    // =========================================================================
+    function updateAll() {
+      const tripName = document.getElementById("tripName").value || "Perjalanan Rombongan";
+      const startTimeStr = document.getElementById("startTime").value || "06:00";
+      const paxCount = Math.max(1, Number(document.getElementById("paxCount").value) || 1);
+      const busCount = Math.max(1, Number(document.getElementById("busCount").value) || 1);
+      const isBusMode = document.getElementById("busMode").checked;
+      const speedFactor = isBusMode ? 1.2 : 1.0;
+
+      const { days, nights, startObj, endObj } = getTripDaysAndNights();
+      const durationLabel = `${days} Hari ${nights} Malam`;
+      document.getElementById("tripDurationPill").textContent = durationLabel;
+      document.getElementById("statDurationSummary").textContent = durationLabel;
+      document.getElementById("statPaxSummary").textContent = `Untuk ${paxCount} Peserta (${busCount} Armada)`;
+
+      // Update header dokumen cetak A4
+      document.getElementById("printTitle").textContent = tripName;
+      document.getElementById("printSubtitle").textContent =
+        endObj && days > 1
+          ? `Tanggal: ${formatDateIndo(startObj)} s.d. ${formatDateIndo(endObj)}`
+          : `Tanggal: ${formatDateIndo(startObj)}`;
+      document.getElementById("printDurationBadge").textContent = `Durasi: ${durationLabel}`;
+      document.getElementById("printArmadaBadge").textContent = `Armada: ${busCount} Unit â€¢ ${paxCount} Peserta`;
+
+      // Hitung total jarak & waktu berkendara
+      let totalMeters = 0;
+      let totalDriveSeconds = 0;
+
+      segmentData.forEach((seg) => {
+        totalMeters += seg.distanceMeters;
+        totalDriveSeconds += seg.durationSeconds * speedFactor;
+      });
+
+      const totalKm = totalMeters / 1000;
+      const totalDriveMins = Math.round(totalDriveSeconds / 60);
+      const driveHours = Math.floor(totalDriveMins / 60);
+      const driveRemMins = totalDriveMins % 60;
+
+      document.getElementById("statDistance").textContent = `${totalKm.toFixed(1)} km`;
+      document.getElementById("statDriveTime").textContent = `${driveHours} Jam ${driveRemMins} Mnt`;
+
+      // Render Tabel Rundown Multi-Hari
+      const [startH, startM] = startTimeStr.split(":").map(Number);
+      let currentTotalMinutes = startH * 60 + startM;
+      let currentDayIndex = 0;
+
+      const rundownBody = document.getElementById("rundownTableBody");
+      let rundownHtml = "";
+
+      const renderDayHeaderRow = (dayIdx) => {
+        const d = new Date(startObj.getTime());
+        d.setDate(d.getDate() + dayIdx);
+        return `
+          <tr class="bg-emerald-50/90 border-y border-emerald-200">
+            <td colspan="6" class="py-1.5 px-2.5 font-extrabold text-emerald-900 text-[11px]">
+              HARI KE-${dayIdx + 1} â€¢ ${formatDateIndo(d)}
+            </td>
+          </tr>
+        `;
+      };
+
+      rundownHtml += renderDayHeaderRow(0);
+
+      stops.forEach((stop, idx) => {
+        let segDistText = "-";
+        let segTimeText = "Titik Awal";
+
+        if (idx > 0 && segmentData[idx - 1]) {
+          const seg = segmentData[idx - 1];
+          const segKm = (seg.distanceMeters / 1000).toFixed(1);
+          const segMins = Math.round((seg.durationSeconds * speedFactor) / 60);
+          currentTotalMinutes += segMins;
+
+          const newDayIndex = Math.floor(currentTotalMinutes / 1440);
+          if (newDayIndex > currentDayIndex) {
+            currentDayIndex = newDayIndex;
+            rundownHtml += renderDayHeaderRow(currentDayIndex);
+          }
+
+          segDistText = `${segKm} km`;
+          segTimeText = formatMinutesDuration(segMins);
+        }
+
+        const arriveClock = formatClockFromMinutes(currentTotalMinutes);
+        const stayMins = stop.isWaypoint
+          ? 0
+          : stop.stayUnit === "hours"
+          ? (Number(stop.stayValue) || 0) * 60
+          : Number(stop.stayValue) || 0;
+
+        currentTotalMinutes += stayMins;
+        const departClock = idx === stops.length - 1 ? "Selesai" : formatClockFromMinutes(currentTotalMinutes);
+
+        const stayLabel = stop.isWaypoint
+          ? '<span class="text-amber-700 font-semibold">Lewat Saja</span>'
+          : stayMins === 0
+          ? "-"
+          : stop.stayUnit === "hours"
+          ? `${stop.stayValue} Jam`
+          : `${stop.stayValue} Mnt`;
+
+        rundownHtml += `
+          <tr class="${stop.isWaypoint ? "bg-amber-50/40 text-slate-600" : "bg-white"}">
+            <td class="py-2 px-2.5 font-bold">${idx + 1}</td>
+            <td class="py-2 px-2.5">
+              <div class="font-bold text-slate-900">${escapeHtml(stop.name)}</div>
+              ${
+                !stop.isWaypoint && (stop.ticketCost > 0 || stop.parkingCost > 0)
+                  ? `<div class="text-[10px] text-slate-500">Tiket: ${formatRupiah(stop.ticketCost)}/org â€¢ Parkir: ${formatRupiah(stop.parkingCost)}/armada</div>`
+                  : ""
+              }
+            </td>
+            <td class="py-2 px-2.5">
+              <div class="font-semibold text-slate-800">${segDistText}</div>
+              <div class="text-[10px] text-slate-500">${segTimeText}</div>
+            </td>
+            <td class="py-2 px-2.5 font-bold text-slate-800">${arriveClock}</td>
+            <td class="py-2 px-2.5">${stayLabel}</td>
+            <td class="py-2 px-2.5 font-bold text-emerald-700">${departClock}</td>
+          </tr>
+        `;
+      });
+
+      rundownBody.innerHTML = rundownHtml;
+
+      // Hitung RAB Lengkap
+      const fuelPrice = Number(document.getElementById("fuelPrice").value) || 0;
+      const fuelRatio = Math.max(0.5, Number(document.getElementById("fuelRatio").value) || 3.5);
+      const busRentCost = Number(document.getElementById("busRentCost").value) || 0;
+      const busRentScheme = document.getElementById("busRentScheme").value;
+      const tollCost = Number(document.getElementById("tollCost").value) || 0;
+      const crewCost = Number(document.getElementById("crewCost").value) || 0;
+      const mealCostPerDay = Number(document.getElementById("mealCostPerDay").value) || 0;
+      const hotelCostPerNight = Number(document.getElementById("hotelCostPerNight").value) || 0;
+      const miscCost = Number(document.getElementById("miscCost").value) || 0;
+      const contingencyPct = Number(document.getElementById("contingencyPct").value) || 0;
+
+      const totalFuelLitresPerBus = totalKm / fuelRatio;
+      const totalFuelLitresAll = totalFuelLitresPerBus * busCount;
+      const totalFuelCost = Math.round(totalFuelLitresAll * fuelPrice);
+
+      document.getElementById("statFuelLitre").textContent = `Estimasi ${totalFuelLitresAll.toFixed(1)} L BBM`;
+
+      const totalBusRent =
+        busRentScheme === "per_day" ? busRentCost * days * busCount : busRentCost * busCount;
+
+      const totalTollCost = tollCost * busCount;
+      const totalCrewCost = crewCost * busCount;
+
+      let totalTicketPerPax = 0;
+      let totalParkingPerBus = 0;
+      stops.forEach((s) => {
+        if (!s.isWaypoint) {
+          totalTicketPerPax += Number(s.ticketCost) || 0;
+          totalParkingPerBus += Number(s.parkingCost) || 0;
+        }
+      });
+
+      const totalTicketAll = totalTicketPerPax * paxCount;
+      const totalParkingAll = totalParkingPerBus * busCount;
+      const totalMealAll = mealCostPerDay * days * paxCount;
+      const totalHotelAll = hotelCostPerNight * nights * paxCount;
+
+      const subTotal =
+        totalBusRent +
+        totalFuelCost +
+        totalTollCost +
+        totalCrewCost +
+        totalParkingAll +
+        totalTicketAll +
+        totalMealAll +
+        totalHotelAll +
+        miscCost;
+
+      const contingencyCost = Math.round(subTotal * (contingencyPct / 100));
+      const grandTotal = subTotal + contingencyCost;
+      const costPerPax = Math.ceil(grandTotal / paxCount);
+
+      document.getElementById("statTotalCost").textContent = formatRupiah(grandTotal);
+      document.getElementById("statCostPerPax").textContent = formatRupiah(costPerPax);
+
+      const rabItems = [
+        {
+          name: "Sewa Armada Kendaraan",
+          desc:
+            busRentScheme === "per_day"
+              ? `${busCount} unit Ã— ${days} hari Ã— ${formatRupiah(busRentCost)}`
+              : `${busCount} unit paket borongan Ã— ${formatRupiah(busRentCost)}`,
+          amount: totalBusRent
+        },
+        {
+          name: "Estimasi Bahan Bakar (BBM)",
+          desc: `${totalKm.toFixed(1)} km Ã· ${fuelRatio} km/L Ã— ${busCount} unit (${totalFuelLitresAll.toFixed(1)} L Ã— ${formatRupiah(fuelPrice)})`,
+          amount: totalFuelCost
+        },
+        {
+          name: "Estimasi Tarif Tol",
+          desc: `${busCount} unit Ã— ${formatRupiah(tollCost)}`,
+          amount: totalTollCost
+        },
+        {
+          name: "Parkir Destinasi Wisata",
+          desc: `${busCount} unit Ã— ${formatRupiah(totalParkingPerBus)} total parkir`,
+          amount: totalParkingAll
+        },
+        {
+          name: "Tips Driver, Co-Driver & Parkir Umum",
+          desc: `${busCount} unit Ã— ${formatRupiah(crewCost)}`,
+          amount: totalCrewCost
+        },
+        {
+          name: "Tiket Masuk Objek Wisata",
+          desc: `${paxCount} peserta Ã— ${formatRupiah(totalTicketPerPax)}`,
+          amount: totalTicketAll
+        },
+        {
+          name: "Konsumsi Peserta",
+          desc: `${paxCount} peserta Ã— ${days} hari Ã— ${formatRupiah(mealCostPerDay)}`,
+          amount: totalMealAll
+        },
+        {
+          name: "Penginapan / Hotel",
+          desc: nights > 0 ? `${paxCount} peserta Ã— ${nights} malam Ã— ${formatRupiah(hotelCostPerNight)}` : "Perjalanan 1 hari (0 malam)",
+          amount: totalHotelAll
+        },
+        {
+          name: "Banner, P3K & Perlengkapan Panitia",
+          desc: "Paket operasional rombongan",
+          amount: miscCost
+        },
+        {
+          name: `Dana Cadangan Tak Terduga (${contingencyPct}%)`,
+          desc: `${contingencyPct}% dari subtotal anggaran`,
+          amount: contingencyCost
+        }
+      ];
+
+      const rabBody = document.getElementById("rabTableBody");
+      rabBody.innerHTML =
+        rabItems
+          .map(
+            (item) => `
+          <tr>
+            <td class="py-2 px-2.5 font-semibold text-slate-800">${item.name}</td>
+            <td class="py-2 px-2.5 text-slate-600">${item.desc}</td>
+            <td class="py-2 px-2.5 text-right font-bold text-slate-900">${formatRupiah(item.amount)}</td>
+          </tr>
+        `
+          )
+          .join("") +
+        `
+        <tr class="bg-slate-100 font-extrabold text-slate-900 border-t-2 border-slate-300">
+          <td colspan="2" class="py-2.5 px-2.5">TOTAL KESELURUHAN ANGGARAN (RAB)</td>
+          <td class="py-2.5 px-2.5 text-right text-sm">${formatRupiah(grandTotal)}</td>
+        </tr>
+        <tr class="bg-emerald-50 font-extrabold text-emerald-900">
+          <td colspan="2" class="py-2.5 px-2.5">ESTIMASI IURAN / PATUNGAN PER PESERTA (${paxCount} ORANG)</td>
+          <td class="py-2.5 px-2.5 text-right text-sm">${formatRupiah(costPerPax)}</td>
+        </tr>
+      `;
+    }
+
+    // =========================================================================
+    // FUNGSI BANTU FORMATTER
+    // =========================================================================
+    function formatRupiah(num) {
+      return "Rp " + Math.round(num).toLocaleString("id-ID");
+    }
+
+    function formatClockFromMinutes(totalMins) {
+      const normalized = ((totalMins % 1440) + 1440) % 1440;
+      const h = String(Math.floor(normalized / 60)).padStart(2, "0");
+      const m = String(normalized % 60).padStart(2, "0");
+      return `${h}:${m}`;
+    }
+
+    function formatMinutesDuration(mins) {
+      if (mins < 60) return `${mins} Mnt`;
+      const h = Math.floor(mins / 60);
+      const m = mins % 60;
+      return m === 0 ? `${h} Jam` : `${h} Jam ${m} Mnt`;
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    function escapeAttr(str) {
+      return String(str).replace(/'/g, "\\'").replace(/"/g, "&quot;");
+    }
+  </script>
+</body>
+</html>
