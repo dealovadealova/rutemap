@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Generator Kitab Rute & RAB Perjalanan Rombongan</title>
+  <title>Generator Kitab Rute &amp; RAB Perjalanan Rombongan</title>
 
   <!-- Leaflet CSS (Peta Interaktif Gratis OpenStreetMap) -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
@@ -109,8 +109,8 @@
           KR
         </div>
         <div>
-          <h1 class="text-base sm:text-lg font-extrabold text-slate-900 leading-tight">Generator Kitab Rute & RAB Wisata</h1>
-          <p class="text-xs text-slate-500">Peta Jalan Raya Riil (OpenStreetMap + OSRM) â€¢ Multi-Hari â€¢ Siap Cetak A4</p>
+          <h1 class="text-base sm:text-lg font-extrabold text-slate-900 leading-tight">Generator Kitab Rute &amp; RAB Wisata</h1>
+          <p class="text-xs text-slate-500">Peta Jalan Raya Riil (OpenStreetMap + OSRM) &bull; Multi-Hari &bull; Siap Cetak A4</p>
         </div>
       </div>
 
@@ -136,12 +136,12 @@
       <div class="flex justify-between items-end">
         <div>
           <p class="text-[10px] uppercase tracking-widest font-bold text-slate-600">Dokumen Operasional Perjalanan Rombongan</p>
-          <h1 id="printTitle" class="text-xl font-extrabold text-slate-900 uppercase">KITAB RUTE & ANGGARAN PERJALANAN</h1>
+          <h1 id="printTitle" class="text-xl font-extrabold text-slate-900 uppercase">KITAB RUTE &amp; ANGGARAN PERJALANAN</h1>
           <p id="printSubtitle" class="text-xs text-slate-700 mt-0.5"></p>
         </div>
         <div class="text-right text-xs">
           <p class="font-bold text-slate-900" id="printDurationBadge">Durasi: 1 Hari 0 Malam</p>
-          <p class="text-slate-600" id="printArmadaBadge">Armada: 1 Bus Besar â€¢ 50 Peserta</p>
+          <p class="text-slate-600" id="printArmadaBadge">Armada: 1 Bus Besar &bull; 50 Peserta</p>
         </div>
       </div>
     </div>
@@ -154,7 +154,7 @@
         <!-- 1. IDENTITAS & RENTANG TANGGAL -->
         <section class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
           <div class="flex items-center justify-between mb-4">
-            <h2 class="text-sm font-extrabold text-slate-900 uppercase tracking-wide">1. Identitas & Rentang Tanggal</h2>
+            <h2 class="text-sm font-extrabold text-slate-900 uppercase tracking-wide">1. Identitas &amp; Rentang Tanggal</h2>
             <span id="tripDurationPill" class="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
               1 Hari 0 Malam
             </span>
@@ -163,7 +163,7 @@
           <div class="space-y-3.5">
             <div>
               <label class="block text-xs font-semibold text-slate-700 mb-1">Nama Kegiatan / Rombongan</label>
-              <input type="text" id="tripName" value="Ziarah & Wisata Pantai Karang Jahe Rembang" oninput="updateAll()" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none" />
+              <input type="text" id="tripName" value="Ziarah &amp; Wisata Pantai Karang Jahe Rembang" oninput="updateAll()" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none" />
             </div>
 
             <div class="grid grid-cols-2 gap-3">
@@ -201,11 +201,11 @@
           </div>
         </section>
 
-        <!-- 2. TITIK RUTE PERJALANAN (BISA DIKLIK / CARI / PILIH PETA) -->
+        <!-- 2. TITIK RUTE PERJALANAN -->
         <section class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
           <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
             <div>
-              <h2 class="text-sm font-extrabold text-slate-900 uppercase tracking-wide">2. Titik Rute & Destinasi</h2>
+              <h2 class="text-sm font-extrabold text-slate-900 uppercase tracking-wide">2. Titik Rute &amp; Destinasi</h2>
               <p class="text-[11px] text-slate-500">Pilih lokasi cepat, ketik cari alamat, atau klik titik langsung di peta.</p>
             </div>
             <button type="button" id="btnAddMapMode" onclick="toggleAddPointFromMap()" class="px-2.5 py-1.5 text-xs font-bold rounded-lg border border-blue-200 bg-blue-50 hover:bg-blue-100 text-blue-700 transition">
@@ -256,7 +256,7 @@
               <div>
                 <label class="block font-semibold text-slate-700 mb-1">Skema Sewa Armada</label>
                 <select id="busRentScheme" onchange="updateAll()" class="w-full px-3 py-2 border border-slate-300 rounded-lg bg-white">
-                  <option value="per_day">Per Hari (Ã— Jumlah Hari)</option>
+                  <option value="per_day">Per Hari (&times; Jumlah Hari)</option>
                   <option value="lump_sum">Paket Borongan Total</option>
                 </select>
               </div>
@@ -268,7 +268,7 @@
                 <input type="number" id="tollCost" value="450000" step="10000" oninput="updateAll()" class="w-full px-3 py-2 border border-slate-300 rounded-lg" />
               </div>
               <div>
-                <label class="block font-semibold text-slate-700 mb-1">Tips Kru & Parkir Umum (Rp)</label>
+                <label class="block font-semibold text-slate-700 mb-1">Tips Kru &amp; Parkir Umum (Rp)</label>
                 <input type="number" id="crewCost" value="600000" step="25000" oninput="updateAll()" class="w-full px-3 py-2 border border-slate-300 rounded-lg" />
               </div>
             </div>
@@ -286,7 +286,7 @@
 
             <div class="grid grid-cols-2 gap-3">
               <div>
-                <label class="block font-semibold text-slate-700 mb-1">Banner, P3K & Dokumentasi (Rp)</label>
+                <label class="block font-semibold text-slate-700 mb-1">Banner, P3K &amp; Dokumentasi (Rp)</label>
                 <input type="number" id="miscCost" value="350000" step="25000" oninput="updateAll()" class="w-full px-3 py-2 border border-slate-300 rounded-lg" />
               </div>
               <div>
@@ -330,7 +330,17 @@
           <div class="flex flex-wrap items-center justify-between gap-2 mb-2.5">
             <div>
               <h2 class="text-sm font-extrabold text-slate-900">Peta Jalur Perjalanan Riil</h2>
-              <p class="text-[11px] text-slate-500">Garis biru mengikuti jaringan jalan raya OpenStreetMap (OSRM). Marker dapat digeser (drag).</p>
+              <div class="flex flex-wrap items-center gap-4 mt-1 text-[11px] font-semibold text-slate-600">
+                <span class="inline-flex items-center gap-1.5">
+                  <span class="w-4 h-1.5 rounded-full bg-blue-600 inline-block"></span>
+                  Rute Berangkat (Menuju Tujuan)
+                </span>
+                <span class="inline-flex items-center gap-1.5">
+                  <span class="w-4 h-1.5 rounded-full bg-amber-400 border border-amber-600 inline-block"></span>
+                  Rute Pulang (Kembali)
+                </span>
+                <span class="text-slate-400 font-normal">&bull; Pin dapat digeser (drag)</span>
+              </div>
             </div>
             <button type="button" onclick="fitMapBounds()" class="no-print px-2.5 py-1 text-xs font-semibold rounded-lg border border-slate-300 hover:bg-slate-50 text-slate-700">
               Paskan Zoom Peta
@@ -343,7 +353,7 @@
         <section class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm card-box">
           <div class="flex items-center justify-between mb-3">
             <div>
-              <h2 class="text-sm font-extrabold text-slate-900">Rundown Jadwal & Segmen Perjalanan</h2>
+              <h2 class="text-sm font-extrabold text-slate-900">Rundown Jadwal &amp; Segmen Perjalanan</h2>
               <p class="text-[11px] text-slate-500">Otomatis membagi hari kalender sesuai akumulasi waktu tempuh dan durasi kegiatan.</p>
             </div>
           </div>
@@ -354,7 +364,7 @@
                 <tr class="bg-slate-100 text-slate-700 border-b border-slate-200">
                   <th class="py-2 px-2.5 font-bold">No</th>
                   <th class="py-2 px-2.5 font-bold">Lokasi / Titik Rute</th>
-                  <th class="py-2 px-2.5 font-bold">Jarak & Tempuh</th>
+                  <th class="py-2 px-2.5 font-bold">Jarak &amp; Tempuh</th>
                   <th class="py-2 px-2.5 font-bold">Tiba</th>
                   <th class="py-2 px-2.5 font-bold">Durasi Singgah</th>
                   <th class="py-2 px-2.5 font-bold">Berangkat</th>
@@ -391,7 +401,7 @@
 
   <script>
     // =========================================================================
-    // DATA PRESET LOKASI POPULER (MEMUDAHKAN KLIK CEPAT TANPA KETIK MANUAL)
+    // DATA PRESET LOKASI POPULER
     // =========================================================================
     const PRESET_LOCATIONS = [
       { label: "Banyubiru, Kab. Semarang (Titik Kumpul)", lat: -7.2981, lng: 110.4222 },
@@ -419,7 +429,7 @@
     let routeLayer = null;
     let markersLayer = null;
     let segmentData = [];
-    let mapPickTargetIndex = null; // null = tidak aktif, 'NEW' = tambah titik baru, angka = ganti koordinat titik ke-i
+    let mapPickTargetIndex = null;
     let routeFetchController = null;
 
     // =========================================================================
@@ -486,9 +496,9 @@
         attribution: '&copy; OpenStreetMap contributors'
       }).addTo(map);
 
+      routeLayer = L.layerGroup().addTo(map);
       markersLayer = L.layerGroup().addTo(map);
 
-      // Event klik langsung di atas peta
       map.on("click", async (e) => {
         if (mapPickTargetIndex === null) return;
 
@@ -722,7 +732,6 @@
       try {
         let items = [];
 
-        // 1. Coba Photon API (cepat & berbasis OpenStreetMap)
         try {
           const photonRes = await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&limit=5`);
           if (photonRes.ok) {
@@ -743,7 +752,6 @@
           // Lanjut fallback ke Nominatim
         }
 
-        // 2. Fallback ke Nominatim OpenStreetMap jika Photon kosong
         if (items.length === 0) {
           const nomRes = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5&countrycodes=id`);
           if (nomRes.ok) {
@@ -763,7 +771,7 @@
 
         resultsBox.innerHTML = items
           .map(
-            (item, idx) => `
+            (item) => `
             <button type="button"
               onclick="selectSearchedLocation(${index}, ${item.lat}, ${item.lng}, '${escapeAttr(item.name)}')"
               class="w-full text-left px-2.5 py-1.5 text-[11px] hover:bg-emerald-50 border-b border-slate-100 last:border-b-0 block">
@@ -803,7 +811,7 @@
     }
 
     // =========================================================================
-    // RENDER DAFTAR KARTU TITIK RUTE DI PANEL KIRI
+    // RENDER DAFTAR KARTU TITIK RUTE DI PANEL KIRI (IKON SVG MURNI)
     // =========================================================================
     function renderStopsList() {
       const container = document.getElementById("stopsContainer");
@@ -827,26 +835,38 @@
           <div class="border border-slate-200 rounded-xl p-3 bg-slate-50/70 space-y-2.5">
             <!-- Baris Header Titik -->
             <div class="flex items-center justify-between gap-2">
-              <div class="flex items-center gap-2">
+              <div class="flex items-center gap-2 min-w-0">
                 <span class="w-6 h-6 rounded-full ${badgeColor} text-white text-xs font-extrabold flex items-center justify-center shrink-0">
                   ${idx + 1}
                 </span>
-                <span class="text-xs font-bold text-slate-800">
+                <span class="text-xs font-bold text-slate-800 truncate">
                   ${isFirst ? "Titik Berangkat" : isLast ? "Titik Akhir" : stop.isWaypoint ? "Waypoint / Jalur Utama" : `Destinasi #${idx}`}
                 </span>
               </div>
 
-              <div class="flex items-center gap-1">
+              <div class="flex items-center gap-1 shrink-0">
                 <button type="button" onclick="pickStopFromMap(${idx})" title="Klik titik di peta"
                   class="px-2 py-1 text-[11px] font-bold rounded bg-emerald-100 hover:bg-emerald-200 text-emerald-800 transition">
                   Pilih dari Peta
                 </button>
-                <button type="button" onclick="moveStop(${idx}, -1)" ${isFirst ? "disabled" : ""}
-                  class="p-1 rounded border border-slate-300 bg-white text-slate-600 disabled:opacity-30 text-xs">â†‘</button>
-                <button type="button" onclick="moveStop(${idx}, 1)" ${isLast ? "disabled" : ""}
-                  class="p-1 rounded border border-slate-300 bg-white text-slate-600 disabled:opacity-30 text-xs">â†“</button>
-                <button type="button" onclick="removeStop(${idx})"
-                  class="p-1 rounded border border-rose-200 bg-rose-50 text-rose-600 hover:bg-rose-100 text-xs font-bold">âœ•</button>
+                <button type="button" onclick="moveStop(${idx}, -1)" ${isFirst ? "disabled" : ""} title="Geser naik"
+                  class="p-1.5 rounded border border-slate-300 bg-white hover:bg-slate-100 text-slate-700 disabled:opacity-30 transition">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7" />
+                  </svg>
+                </button>
+                <button type="button" onclick="moveStop(${idx}, 1)" ${isLast ? "disabled" : ""} title="Geser turun"
+                  class="p-1.5 rounded border border-slate-300 bg-white hover:bg-slate-100 text-slate-700 disabled:opacity-30 transition">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                <button type="button" onclick="removeStop(${idx})" title="Hapus titik"
+                  class="p-1.5 rounded border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-600 transition">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
               </div>
             </div>
 
@@ -887,7 +907,7 @@
               }
             </div>
 
-            <!-- Durasi Singgah, Tiket & Parkir (Sembunyikan jika Waypoint) -->
+            <!-- Durasi Singgah, Tiket & Parkir -->
             ${
               !stop.isWaypoint
                 ? `<div class="grid grid-cols-3 gap-2 pt-1 border-t border-slate-200/80 text-[11px]">
@@ -923,8 +943,24 @@
     }
 
     // =========================================================================
-    // KALKULASI RUTE JALAN RAYA RIIL VIA OSRM API
+    // KALKULASI RUTE JALAN RAYA RIIL VIA OSRM (BIRU BERANGKAT, KUNING PULANG)
     // =========================================================================
+    function getTurnaroundStopIndex() {
+      if (stops.length <= 2) return stops.length - 1;
+      const start = stops[0];
+      let maxDist = -1;
+      let farthestIdx = stops.length - 1;
+
+      for (let i = 1; i < stops.length; i++) {
+        const d = haversineMeters(start.lat, start.lng, stops[i].lat, stops[i].lng);
+        if (d > maxDist) {
+          maxDist = d;
+          farthestIdx = i;
+        }
+      }
+      return farthestIdx;
+    }
+
     async function recalculateRoute() {
       renderMapMarkers();
 
@@ -942,7 +978,8 @@
       routeFetchController = new AbortController();
 
       const coordsParam = stops.map((s) => `${s.lng},${s.lat}`).join(";");
-      const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${coordsParam}?overview=full&geometries=geojson&steps=false`;
+      const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${coordsParam}?overview=full&geometries=geojson&steps=true`;
+      const turnaroundIdx = getTurnaroundStopIndex();
 
       try {
         const response = await fetch(osrmUrl, { signal: routeFetchController.signal });
@@ -954,22 +991,52 @@
         }
 
         const route = data.routes[0];
+        routeLayer.clearLayers();
 
-        // Gambar garis rute jalan raya riil di peta
-        if (routeLayer) {
-          map.removeLayer(routeLayer);
-        }
-        routeLayer = L.geoJSON(route.geometry, {
-          style: {
-            color: "#0284c7",
-            weight: 5,
-            opacity: 0.85
+        // Gambar setiap segmen: Biru (#2563eb) untuk rute berangkat, Kuning (#eab308) untuk rute pulang
+        route.legs.forEach((leg, legIdx) => {
+          const isReturnLeg = legIdx >= turnaroundIdx;
+          const legCoords = [];
+
+          if (leg.steps && leg.steps.length > 0) {
+            leg.steps.forEach((step) => {
+              if (step.geometry && step.geometry.coordinates) {
+                step.geometry.coordinates.forEach(([lng, lat]) => {
+                  legCoords.push([lat, lng]);
+                });
+              }
+            });
           }
-        }).addTo(map);
+
+          if (legCoords.length === 0) {
+            legCoords.push([stops[legIdx].lat, stops[legIdx].lng]);
+            legCoords.push([stops[legIdx + 1].lat, stops[legIdx + 1].lng]);
+          }
+
+          if (isReturnLeg) {
+            // Garis tepi gelap tipis agar kuning tetap jelas di atas peta terang
+            L.polyline(legCoords, {
+              color: "#854d0e",
+              weight: 7,
+              opacity: 0.55
+            }).addTo(routeLayer);
+
+            L.polyline(legCoords, {
+              color: "#facc15",
+              weight: 4.5,
+              opacity: 0.95
+            }).addTo(routeLayer);
+          } else {
+            L.polyline(legCoords, {
+              color: "#2563eb",
+              weight: 5,
+              opacity: 0.9
+            }).addTo(routeLayer);
+          }
+        });
 
         fitMapBounds();
 
-        // Simpan jarak (meter) dan durasi (detik) per segmen
         segmentData = route.legs.map((leg) => ({
           distanceMeters: leg.distance,
           durationSeconds: leg.duration,
@@ -980,21 +1047,22 @@
       } catch (err) {
         if (err.name === "AbortError") return;
 
-        // Fallback jarak Haversine jika OSRM sedang sibuk/offline
-        if (routeLayer) {
-          map.removeLayer(routeLayer);
-        }
-        const latLngs = stops.map((s) => [s.lat, s.lng]);
-        routeLayer = L.polyline(latLngs, {
-          color: "#d97706",
-          weight: 4,
-          dashArray: "8, 8"
-        }).addTo(map);
-
-        fitMapBounds();
-
+        routeLayer.clearLayers();
         segmentData = [];
+
         for (let i = 0; i < stops.length - 1; i++) {
+          const isReturnLeg = i >= turnaroundIdx;
+          const segLatLngs = [
+            [stops[i].lat, stops[i].lng],
+            [stops[i + 1].lat, stops[i + 1].lng]
+          ];
+
+          L.polyline(segLatLngs, {
+            color: isReturnLeg ? "#eab308" : "#2563eb",
+            weight: 4.5,
+            dashArray: "8, 8"
+          }).addTo(routeLayer);
+
           const distMeters = haversineMeters(stops[i].lat, stops[i].lng, stops[i + 1].lat, stops[i + 1].lng) * 1.25;
           const durSeconds = (distMeters / 1000 / 45) * 3600;
           segmentData.push({
@@ -1003,6 +1071,8 @@
             isFallback: true
           });
         }
+
+        fitMapBounds();
         document.getElementById("statRouteStatus").textContent = "Mode estimasi jalan (offline)";
       }
 
@@ -1069,16 +1139,14 @@
       document.getElementById("statDurationSummary").textContent = durationLabel;
       document.getElementById("statPaxSummary").textContent = `Untuk ${paxCount} Peserta (${busCount} Armada)`;
 
-      // Update header dokumen cetak A4
       document.getElementById("printTitle").textContent = tripName;
       document.getElementById("printSubtitle").textContent =
         endObj && days > 1
           ? `Tanggal: ${formatDateIndo(startObj)} s.d. ${formatDateIndo(endObj)}`
           : `Tanggal: ${formatDateIndo(startObj)}`;
       document.getElementById("printDurationBadge").textContent = `Durasi: ${durationLabel}`;
-      document.getElementById("printArmadaBadge").textContent = `Armada: ${busCount} Unit â€¢ ${paxCount} Peserta`;
+      document.getElementById("printArmadaBadge").textContent = `Armada: ${busCount} Unit • ${paxCount} Peserta`;
 
-      // Hitung total jarak & waktu berkendara
       let totalMeters = 0;
       let totalDriveSeconds = 0;
 
@@ -1095,7 +1163,6 @@
       document.getElementById("statDistance").textContent = `${totalKm.toFixed(1)} km`;
       document.getElementById("statDriveTime").textContent = `${driveHours} Jam ${driveRemMins} Mnt`;
 
-      // Render Tabel Rundown Multi-Hari
       const [startH, startM] = startTimeStr.split(":").map(Number);
       let currentTotalMinutes = startH * 60 + startM;
       let currentDayIndex = 0;
@@ -1109,7 +1176,7 @@
         return `
           <tr class="bg-emerald-50/90 border-y border-emerald-200">
             <td colspan="6" class="py-1.5 px-2.5 font-extrabold text-emerald-900 text-[11px]">
-              HARI KE-${dayIdx + 1} â€¢ ${formatDateIndo(d)}
+              HARI KE-${dayIdx + 1} &bull; ${formatDateIndo(d)}
             </td>
           </tr>
         `;
@@ -1162,7 +1229,7 @@
               <div class="font-bold text-slate-900">${escapeHtml(stop.name)}</div>
               ${
                 !stop.isWaypoint && (stop.ticketCost > 0 || stop.parkingCost > 0)
-                  ? `<div class="text-[10px] text-slate-500">Tiket: ${formatRupiah(stop.ticketCost)}/org â€¢ Parkir: ${formatRupiah(stop.parkingCost)}/armada</div>`
+                  ? `<div class="text-[10px] text-slate-500">Tiket: ${formatRupiah(stop.ticketCost)}/org &bull; Parkir: ${formatRupiah(stop.parkingCost)}/armada</div>`
                   : ""
               }
             </td>
@@ -1179,7 +1246,6 @@
 
       rundownBody.innerHTML = rundownHtml;
 
-      // Hitung RAB Lengkap
       const fuelPrice = Number(document.getElementById("fuelPrice").value) || 0;
       const fuelRatio = Math.max(0.5, Number(document.getElementById("fuelRatio").value) || 3.5);
       const busRentCost = Number(document.getElementById("busRentCost").value) || 0;
@@ -1240,43 +1306,43 @@
           name: "Sewa Armada Kendaraan",
           desc:
             busRentScheme === "per_day"
-              ? `${busCount} unit Ã— ${days} hari Ã— ${formatRupiah(busRentCost)}`
-              : `${busCount} unit paket borongan Ã— ${formatRupiah(busRentCost)}`,
+              ? `${busCount} unit x ${days} hari x ${formatRupiah(busRentCost)}`
+              : `${busCount} unit paket borongan x ${formatRupiah(busRentCost)}`,
           amount: totalBusRent
         },
         {
           name: "Estimasi Bahan Bakar (BBM)",
-          desc: `${totalKm.toFixed(1)} km Ã· ${fuelRatio} km/L Ã— ${busCount} unit (${totalFuelLitresAll.toFixed(1)} L Ã— ${formatRupiah(fuelPrice)})`,
+          desc: `${totalKm.toFixed(1)} km / ${fuelRatio} km/L x ${busCount} unit (${totalFuelLitresAll.toFixed(1)} L x ${formatRupiah(fuelPrice)})`,
           amount: totalFuelCost
         },
         {
           name: "Estimasi Tarif Tol",
-          desc: `${busCount} unit Ã— ${formatRupiah(tollCost)}`,
+          desc: `${busCount} unit x ${formatRupiah(tollCost)}`,
           amount: totalTollCost
         },
         {
           name: "Parkir Destinasi Wisata",
-          desc: `${busCount} unit Ã— ${formatRupiah(totalParkingPerBus)} total parkir`,
+          desc: `${busCount} unit x ${formatRupiah(totalParkingPerBus)} total parkir`,
           amount: totalParkingAll
         },
         {
           name: "Tips Driver, Co-Driver & Parkir Umum",
-          desc: `${busCount} unit Ã— ${formatRupiah(crewCost)}`,
+          desc: `${busCount} unit x ${formatRupiah(crewCost)}`,
           amount: totalCrewCost
         },
         {
           name: "Tiket Masuk Objek Wisata",
-          desc: `${paxCount} peserta Ã— ${formatRupiah(totalTicketPerPax)}`,
+          desc: `${paxCount} peserta x ${formatRupiah(totalTicketPerPax)}`,
           amount: totalTicketAll
         },
         {
           name: "Konsumsi Peserta",
-          desc: `${paxCount} peserta Ã— ${days} hari Ã— ${formatRupiah(mealCostPerDay)}`,
+          desc: `${paxCount} peserta x ${days} hari x ${formatRupiah(mealCostPerDay)}`,
           amount: totalMealAll
         },
         {
           name: "Penginapan / Hotel",
-          desc: nights > 0 ? `${paxCount} peserta Ã— ${nights} malam Ã— ${formatRupiah(hotelCostPerNight)}` : "Perjalanan 1 hari (0 malam)",
+          desc: nights > 0 ? `${paxCount} peserta x ${nights} malam x ${formatRupiah(hotelCostPerNight)}` : "Perjalanan 1 hari (0 malam)",
           amount: totalHotelAll
         },
         {
@@ -1297,8 +1363,8 @@
           .map(
             (item) => `
           <tr>
-            <td class="py-2 px-2.5 font-semibold text-slate-800">${item.name}</td>
-            <td class="py-2 px-2.5 text-slate-600">${item.desc}</td>
+            <td class="py-2 px-2.5 font-semibold text-slate-800">${escapeHtml(item.name)}</td>
+            <td class="py-2 px-2.5 text-slate-600">${escapeHtml(item.desc)}</td>
             <td class="py-2 px-2.5 text-right font-bold text-slate-900">${formatRupiah(item.amount)}</td>
           </tr>
         `
